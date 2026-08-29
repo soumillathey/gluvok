@@ -33,6 +33,6 @@ ANPR_SERVER_URL = os.getenv(
 ANPR_CAPTURE_INTERVAL = 2.0        # Seconds between Camera 1 ANPR captures
 POST_STABILITY_DURATION = 10.0      # Additional seconds to capture ANPR after stability
 CAMERA_TIMEOUT = 3.0               # Seconds allowed for individual camera snapshot HTTP request
-ANPR_SERVER_TIMEOUT = 6.0          # Seconds allowed for ANPR HTTP POST request (adjusted for RPi CPU inference)
+ANPR_SERVER_TIMEOUT = 15.0         # Seconds allowed for ANPR HTTP POST request (YOLO+OCR on RPi takes 6-10s)
 MAX_PARALLEL_CAMERA_WORKERS = 4    # Maximum concurrent thread pool workers for snapshots
 
