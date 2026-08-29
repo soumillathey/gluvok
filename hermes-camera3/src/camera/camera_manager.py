@@ -39,7 +39,8 @@ def fetch_image_bytes(camera_url: str, timeout: float = CAMERA_TIMEOUT) -> Optio
 def _fetch_http_snapshot(url: str, timeout: float) -> Optional[bytes]:
     """Fetch HTTP JPEG snapshot with low memory footprint."""
     try:
-        response = requests.get(url, timeout=timeout)
+        # verify=False handles cameras with self-signed SSL certificates
+        response = requests.get(url, timeout=timeout, verify=False)
         if response.status_code == 200 and response.content:
             return response.content
         else:
