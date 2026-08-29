@@ -1,0 +1,40 @@
+[project]
+name = "argus"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "docling[rapidocr]>=2.120.1",
+    "fastapi>=0.141.1",
+    "loguru>=0.7.2",
+    "numpy>=2.5.1",
+    "opencv-python-headless>=5.0.0.93",
+    "pillow>=12.3.0",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.15.0",
+    "python-multipart>=0.0.32",
+    "requests>=2.32.0",
+    "ultralytics>=8.4.106",
+    "uvicorn>=0.52.3",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=8.0.0",
+    "ruff>=0.16.4",
+    "ty>=0.0.74",
+]
+
+[tool.uv]
+# opencv-python and opencv-python-headless both install into the same `cv2`
+# namespace; having both present breaks the import. docling[rapidocr] and
+# ultralytics pull in plain opencv-python transitively even though the
+# project depends on -headless directly, so this override keeps the
+# unsatisfiable variant out of the resolution entirely.
+override-dependencies = ["opencv-python; sys_platform == 'unsupported_platform'"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

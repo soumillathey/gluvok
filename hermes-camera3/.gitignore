@@ -1,0 +1,9 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Runtime configuration
+config.json
+
+# System files
+.DS_Store
