@@ -3,7 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gluvok Hermes — Fallback Diagnostics & Wi-Fi Setup</title>
+  <title>Gluvok Hermes — Diagnostic Console & Wi-Fi Setup</title>
+  
+  <!-- Modern Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -11,66 +17,117 @@
       darkMode: 'class',
       theme: {
         extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+          },
           colors: {
             brand: {
-              50: '#f0fdf4',
-              500: '#22c55e',
-              600: '#16a34a',
-              700: '#15803d',
-              900: '#14532d',
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              900: '#064e3b',
+              950: '#022c22',
+            },
+            accent: {
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
             }
+          },
+          boxShadow: {
+            'glow-emerald': '0 0 25px -5px rgba(16, 185, 129, 0.25)',
+            'glow-blue': '0 0 25px -5px rgba(14, 165, 233, 0.25)',
+            'glow-rose': '0 0 25px -5px rgba(244, 63, 94, 0.25)',
           }
         }
       }
     }
   </script>
-  <!-- Embedded Offline CSS Fallbacks in case internet is down on Pi -->
+
+  <!-- Embedded Offline Style Layer -->
   <style>
+    * { box-sizing: border-box; }
     body {
-      background-color: #0f172a;
-      color: #f8fafc;
-      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: #030712;
+      color: #f3f4f6;
+      font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
       margin: 0;
       padding: 0;
+      -webkit-font-smoothing: antialiased;
     }
-    .glass-card {
-      background: rgba(30, 41, 59, 0.7);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+    .glass-panel {
+      background: rgba(17, 24, 39, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.07);
     }
-    .badge-success { background-color: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
-    .badge-warning { background-color: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
-    .badge-danger { background-color: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-    .badge-info { background-color: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .glass-panel-interactive {
+      background: rgba(17, 24, 39, 0.6);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .glass-panel-interactive:hover {
+      border-color: rgba(52, 211, 153, 0.3);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+    .badge-success { background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-warning { background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-danger { background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .badge-info { background: rgba(14, 165, 233, 0.12); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.3); }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(51, 65, 85, 0.8); border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(71, 85, 105, 1); }
   </style>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100 p-4 md:p-8">
-  <div class="max-w-6xl mx-auto space-y-8">
+
+<body class="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 lg:p-8 selection:bg-emerald-500/30 selection:text-emerald-200">
+  
+  <!-- Background Glow Accents -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+    <div class="absolute -top-40 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/3 -right-20 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl"></div>
+  </div>
+
+  <div class="max-w-7xl mx-auto space-y-6">
     
     <!-- Top Header -->
-    <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 glass-card p-6 rounded-2xl shadow-xl border border-slate-800">
+    <header class="glass-panel p-5 sm:p-6 rounded-3xl shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-5 border border-slate-800/80">
       <div class="flex items-center space-x-4">
-        <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-          <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
-          </svg>
+        <div class="relative flex-shrink-0">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-sky-400 flex items-center justify-center shadow-glow-emerald">
+            <svg class="w-8 h-8 text-slate-950" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+            </svg>
+          </div>
+          <span class="absolute -bottom-1 -right-1 flex h-4 w-4">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-slate-950"></span>
+          </span>
         </div>
         <div>
-          <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-3">
-            Hermes Weighbridge Controller
-            <span class="text-xs px-2.5 py-0.5 rounded-full font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Fallback Console</span>
-          </h1>
-          <p class="text-sm text-slate-400">On-site Raspberry Pi diagnostics and Wi-Fi emergency configuration portal</p>
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <h1 class="text-2xl font-extrabold tracking-tight text-white">Gluvok Hermes</h1>
+            <span class="px-3 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">v0.1.0 RPi</span>
+            <span id="hotspot-badge" class="hidden px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">Hotspot Active</span>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-400 mt-0.5 font-medium">Industrial Weighbridge Multi-Camera & ANPR Controller</p>
         </div>
       </div>
-      <div class="flex items-center gap-3 self-start md:self-auto">
-        <div id="connection-status" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-800 text-emerald-400 text-xs font-semibold">
+
+      <!-- Action Buttons & Status Pill -->
+      <div class="flex items-center gap-3 self-start md:self-auto flex-wrap">
+        <div id="live-indicator" class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900/80 border border-slate-800 text-xs font-semibold text-emerald-400">
           <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          System Live
+          <span id="network-ip-display">Connecting...</span>
         </div>
-        <button onclick="fetchStatus()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700 transition flex items-center gap-1.5">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+        <button onclick="fetchStatus(true)" class="px-4 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition flex items-center gap-2 shadow-sm">
+          <svg id="refresh-icon" class="w-4 h-4 text-slate-400 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
           </svg>
           Refresh
@@ -78,136 +135,210 @@
       </div>
     </header>
 
-    <!-- Main Content Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Real-Time Metrics & Telemetry Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      
+      <!-- Card 1: Scale Indicator Weight -->
+      <div class="glass-panel p-5 rounded-3xl border border-slate-800 flex flex-col justify-between relative overflow-hidden group">
+        <div class="flex items-center justify-between text-xs text-slate-400 font-medium">
+          <span class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            Scale Indicator
+          </span>
+          <span id="scale-state-pill" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300">IDLE</span>
+        </div>
+        <div class="my-3">
+          <div id="live-weight-val" class="text-3xl sm:text-4xl font-extrabold font-mono text-emerald-400 tracking-tight">0.000 <span class="text-base font-normal text-slate-400">kg</span></div>
+          <div id="scale-port-val" class="text-[11px] font-mono text-slate-500 mt-1">/dev/ttyAMA0 @ 1200 baud</div>
+        </div>
+        <div class="text-[11px] text-slate-400 flex items-center justify-between border-t border-slate-800/80 pt-2.5">
+          <span>Threshold: <strong id="thresh-val" class="text-slate-300">50.0 kg</strong></span>
+          <span class="text-emerald-400 font-semibold">10s Stability</span>
+        </div>
+      </div>
 
-      <!-- Left Column: Wi-Fi Setup & Hardware Health -->
-      <div class="space-y-6 lg:col-span-1">
-        
-        <!-- Wi-Fi Emergency Config Card -->
-        <div class="glass-card p-6 rounded-2xl border border-slate-800 shadow-lg">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-semibold text-white flex items-center gap-2">
-              <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/>
-              </svg>
-              Wi-Fi Configuration
-            </h2>
-            <span class="text-xs text-slate-400">Offline Recovery</span>
+      <!-- Card 2: Argus ANPR Microservice -->
+      <div class="glass-panel p-5 rounded-3xl border border-slate-800 flex flex-col justify-between relative overflow-hidden group">
+        <div class="flex items-center justify-between text-xs text-slate-400 font-medium">
+          <span class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+            Argus ANPR Engine
+          </span>
+          <span id="argus-badge" class="badge-info px-2 py-0.5 rounded-full text-[10px] font-bold">CHECKING...</span>
+        </div>
+        <div class="my-3">
+          <div class="text-lg font-bold text-white flex items-center gap-2">
+            YOLO v11 + Docling
           </div>
-          <p class="text-xs text-slate-400 mb-4">Update the Wi-Fi credentials for the Raspberry Pi. Settings persist in <code class="text-emerald-400">config.json</code>.</p>
-          
-          <form id="wifi-form" onsubmit="saveWifi(event)" class="space-y-4">
-            <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1.5">Network Name (SSID)</label>
-              <input type="text" id="wifi-ssid" required placeholder="Enter Wi-Fi SSID" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+          <div id="argus-url-val" class="text-[11px] font-mono text-slate-400 mt-1 truncate">http://127.0.0.1:8000</div>
+        </div>
+        <div class="text-[11px] text-slate-400 flex items-center justify-between border-t border-slate-800/80 pt-2.5">
+          <span>Timeout: <strong>15.0s</strong></span>
+          <span class="text-sky-400 font-semibold">FastAPI Microservice</span>
+        </div>
+      </div>
+
+      <!-- Card 3: Camera System -->
+      <div class="glass-panel p-5 rounded-3xl border border-slate-800 flex flex-col justify-between relative overflow-hidden group">
+        <div class="flex items-center justify-between text-xs text-slate-400 font-medium">
+          <span class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-teal-400"></span>
+            Cameras
+          </span>
+          <span class="badge-success px-2 py-0.5 rounded-full text-[10px] font-bold">READY</span>
+        </div>
+        <div class="my-3">
+          <div class="text-lg font-bold text-white flex items-center gap-2">
+            Camera 1 (ANPR RTSP)
+          </div>
+          <div id="aux-cam-count" class="text-[11px] text-slate-400 mt-1">1 Auxiliary overview camera</div>
+        </div>
+        <div class="text-[11px] text-slate-400 flex items-center justify-between border-t border-slate-800/80 pt-2.5">
+          <span>Storage: <strong class="text-emerald-400">Pure RAM</strong></span>
+          <span class="text-slate-400">0 Disk I/O</span>
+        </div>
+      </div>
+
+      <!-- Card 4: Supabase Cloud Sync -->
+      <div class="glass-panel p-5 rounded-3xl border border-slate-800 flex flex-col justify-between relative overflow-hidden group">
+        <div class="flex items-center justify-between text-xs text-slate-400 font-medium">
+          <span class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            Cloud Sync
+          </span>
+          <span id="supabase-badge" class="badge-warning px-2 py-0.5 rounded-full text-[10px] font-bold">READY</span>
+        </div>
+        <div class="my-3">
+          <div class="text-lg font-bold text-white flex items-center gap-2">
+            Center ID: <span id="center-id-val" class="text-emerald-400 font-mono">1</span>
+          </div>
+          <div id="operator-email-val" class="text-[11px] text-slate-400 mt-1 truncate">Operator configured</div>
+        </div>
+        <div class="text-[11px] text-slate-400 flex items-center justify-between border-t border-slate-800/80 pt-2.5">
+          <span>Table: <code class="text-slate-300">weighments</code></span>
+          <span class="text-emerald-400 font-semibold">HTTPS REST</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Main Section: Wi-Fi Setup & Error Code Directory -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Left Column: Wi-Fi Emergency Configuration (4 cols) -->
+      <div class="lg:col-span-4 space-y-6">
+        
+        <div class="glass-panel p-6 rounded-3xl border border-slate-800 shadow-xl space-y-5">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800/80">
+            <div class="flex items-center gap-2.5">
+              <div class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/>
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-base font-bold text-white">Wi-Fi Configuration</h2>
+                <p class="text-[11px] text-slate-400">Emergency setup & connection</p>
+              </div>
             </div>
+            <span class="text-[11px] font-mono px-2 py-0.5 rounded-lg bg-slate-800 text-slate-400 border border-slate-700/60">wlan0</span>
+          </div>
+
+          <form id="wifi-form" onsubmit="saveWifi(event)" class="space-y-4 text-xs">
             <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1.5">Wi-Fi Password</label>
+              <label class="block font-semibold text-slate-300 mb-1.5">Network Name (SSID)</label>
+              <input type="text" id="wifi-ssid" required placeholder="e.g. Factory_WiFi_5G" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition">
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-300 mb-1.5">Wi-Fi Password</label>
               <div class="relative">
-                <input type="password" id="wifi-password" placeholder="Enter password" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 pr-10">
-                <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-200 text-xs">
+                <input type="password" id="wifi-password" placeholder="Enter password" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition pr-11">
+                <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-200 text-xs px-1 py-0.5 rounded transition">
                   👁️
                 </button>
               </div>
             </div>
-            <div id="wifi-alert" class="hidden text-xs p-3 rounded-lg"></div>
+
+            <div id="wifi-alert" class="hidden p-3.5 rounded-xl text-xs leading-relaxed transition"></div>
+
             <div class="flex items-center gap-3 pt-2">
-              <button type="submit" class="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs transition shadow-lg shadow-emerald-600/20">
-                Save & Connect
+              <button type="submit" id="save-wifi-btn" class="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs transition shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2">
+                <span>Save & Connect</span>
               </button>
-              <button type="button" onclick="clearWifi()" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-red-900/40 hover:text-red-300 text-slate-400 font-medium text-xs border border-slate-700 transition">
+              <button type="button" onclick="clearWifi()" class="py-3 px-3.5 rounded-xl bg-slate-900 hover:bg-rose-950/50 hover:text-rose-300 text-slate-400 font-semibold text-xs border border-slate-800 transition">
                 Clear
               </button>
             </div>
           </form>
+
+          <div class="p-3.5 rounded-2xl bg-slate-900/40 border border-slate-800/80 text-[11px] text-slate-400 space-y-1.5">
+            <div class="font-semibold text-slate-300 flex items-center gap-1.5">
+              <span>💡</span> Network Auto-Recovery
+            </div>
+            <p>If site Wi-Fi disconnects, Hermes automatically broadcasts <code class="text-amber-300 font-mono">Gluvok-Setup</code> (Pass: <code class="text-amber-300 font-mono">gluvok1234</code>) so you can reconnect anytime.</p>
+          </div>
         </div>
 
-        <!-- Hardware & Services Health Card -->
-        <div class="glass-card p-6 rounded-2xl border border-slate-800 shadow-lg space-y-4">
-          <h2 class="text-lg font-semibold text-white flex items-center gap-2">
-            <svg class="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-            </svg>
-            System Diagnostics
-          </h2>
+        <!-- Live Telemetry Stream -->
+        <div class="glass-panel p-5 rounded-3xl border border-slate-800 shadow-xl space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-bold text-slate-200 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              Live Telemetry Log
+            </h3>
+            <span class="text-[10px] text-slate-500 font-mono">Real-Time</span>
+          </div>
 
-          <div class="space-y-3 text-xs">
-            <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
-              <div>
-                <div class="font-medium text-slate-200">Scale UART Interface</div>
-                <div class="text-slate-500" id="scale-port-info">/dev/ttyAMA0 @ 1200 baud</div>
-              </div>
-              <span id="scale-status-badge" class="badge-success px-2 py-0.5 rounded-full font-medium">CONNECTED</span>
-            </div>
-
-            <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
-              <div>
-                <div class="font-medium text-slate-200">Current Scale Weight</div>
-                <div class="text-slate-500" id="scale-state-info">State: IDLE</div>
-              </div>
-              <span id="scale-weight-val" class="text-emerald-400 font-mono font-bold text-sm">0.000 kg</span>
-            </div>
-
-            <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
-              <div>
-                <div class="font-medium text-slate-200">Argus ANPR Service</div>
-                <div class="text-slate-500" id="argus-url-info">http://127.0.0.1:8000</div>
-              </div>
-              <span id="argus-status-badge" class="badge-info px-2 py-0.5 rounded-full font-medium">CHECKING...</span>
-            </div>
-
-            <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
-              <div>
-                <div class="font-medium text-slate-200">Supabase Cloud Sync</div>
-                <div class="text-slate-500" id="supabase-info">Center ID: 1</div>
-              </div>
-              <span id="supabase-status-badge" class="badge-success px-2 py-0.5 rounded-full font-medium">ONLINE</span>
-            </div>
+          <div id="events-log" class="custom-scrollbar p-3.5 rounded-2xl bg-slate-950 border border-slate-900 font-mono text-[11px] text-slate-300 space-y-1.5 max-h-48 overflow-y-auto leading-relaxed">
+            <div class="text-slate-600">[System] Initializing live telemetry stream...</div>
           </div>
         </div>
 
       </div>
 
-      <!-- Right Column: Error Codes Catalog & Diagnostic Feed -->
-      <div class="space-y-6 lg:col-span-2">
+      <!-- Right Column: Interactive Error Codes Directory (8 cols) -->
+      <div class="lg:col-span-8 space-y-6">
         
-        <!-- Live System Logs / Event Feed -->
-        <div class="glass-card p-6 rounded-2xl border border-slate-800 shadow-lg">
-          <div class="flex items-center justify-between mb-3">
-            <h2 class="text-lg font-semibold text-white flex items-center gap-2">
-              <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-              </svg>
-              Recent System Status & Events
-            </h2>
-            <span class="text-xs text-slate-400">Live Telemetry</span>
-          </div>
-
-          <div id="events-log" class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 font-mono text-xs text-slate-300 space-y-1.5 max-h-48 overflow-y-auto">
-            <div class="text-slate-500">[System] Initializing web console telemetry feed...</div>
-          </div>
-        </div>
-
-        <!-- Comprehensive Error Code Catalog -->
-        <div class="glass-card p-6 rounded-2xl border border-slate-800 shadow-lg space-y-4">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="glass-panel p-6 rounded-3xl border border-slate-800 shadow-xl space-y-5">
+          
+          <!-- Title & Search Bar -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-800/80">
             <div>
-              <h2 class="text-lg font-semibold text-white flex items-center gap-2">
-                <svg class="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                </svg>
-                System Error Code Directory
+              <h2 class="text-lg font-bold text-white flex items-center gap-2.5">
+                <div class="p-2 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                  </svg>
+                </div>
+                Error Code Directory & Diagnostics
               </h2>
-              <p class="text-xs text-slate-400">Reference of all error codes forwarded to Supabase and their corrective actions</p>
+              <p class="text-xs text-slate-400 mt-1">Reference of all error codes forwarded to Supabase in place of license plate strings</p>
             </div>
-            <input type="text" id="error-search" oninput="filterErrors()" placeholder="Filter error codes..." class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+            
+            <!-- Search input -->
+            <div class="relative w-full sm:w-64">
+              <input type="text" id="error-search" oninput="filterErrors()" placeholder="Search error codes..." class="w-full pl-9 pr-3.5 py-2 rounded-xl bg-slate-900/90 border border-slate-700/80 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition">
+              <svg class="w-4 h-4 text-slate-500 absolute left-3 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+            </div>
           </div>
 
-          <!-- Error Cards Grid -->
-          <div id="error-catalog" class="grid grid-cols-1 md:grid-cols-2 gap-3.5 text-xs">
-            <!-- Rendered by JavaScript -->
+          <!-- Category Filter Pills -->
+          <div class="flex items-center gap-2 flex-wrap text-xs">
+            <button onclick="setCategoryFilter('ALL')" id="filter-btn-ALL" class="px-3 py-1.5 rounded-xl font-semibold bg-emerald-500 text-slate-950 shadow-sm transition">All Codes (12)</button>
+            <button onclick="setCategoryFilter('ANPR')" id="filter-btn-ANPR" class="px-3 py-1.5 rounded-xl font-medium bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition">ANPR Engine</button>
+            <button onclick="setCategoryFilter('SAFETY')" id="filter-btn-SAFETY" class="px-3 py-1.5 rounded-xl font-medium bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition">Safety & Pre-screening</button>
+            <button onclick="setCategoryFilter('SCALE')" id="filter-btn-SCALE" class="px-3 py-1.5 rounded-xl font-medium bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition">Scale UART</button>
+            <button onclick="setCategoryFilter('CLOUD')" id="filter-btn-CLOUD" class="px-3 py-1.5 rounded-xl font-medium bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition">Cloud & Network</button>
           </div>
+
+          <!-- Error Cards Catalog -->
+          <div id="error-catalog" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Dynamically populated -->
+          </div>
+
         </div>
 
       </div>
@@ -215,8 +346,9 @@
     </div>
 
     <!-- Footer -->
-    <footer class="text-center text-xs text-slate-500 py-4">
-      Gluvok Weighbridge Industrial Integration &bull; Hermes Controller &bull; Raspberry Pi Embedded Mode
+    <footer class="text-center text-xs text-slate-600 py-6 space-y-1">
+      <div>Gluvok Weighbridge Industrial Integration System &bull; Embedded Hermes Daemon &bull; Raspberry Pi</div>
+      <div class="text-[11px] text-slate-600">Pure In-RAM Image Lifecycle (Zero SD Card Wear) &bull; Automatic Fallback Hotspot Enabled</div>
     </footer>
 
   </div>
@@ -225,101 +357,158 @@
     const ERROR_CODES_DB = [
       {
         code: "NO_PLATE_DETECTED",
-        category: "ANPR Engine",
+        category: "ANPR",
+        categoryName: "ANPR Engine",
         badgeClass: "badge-warning",
-        cause: "Vehicle recognized on weighbridge, but license plate is obscured, dirty, or unreadable.",
-        action: "Inspect Camera 1 optical alignment, clean vehicle plate, or check lighting/glare."
+        cause: "Vehicle recognized on weighbridge, but license plate characters are obscured, dirty, or unreadable.",
+        action: "Inspect Camera 1 optical alignment, clean vehicle plate, or check lighting/glare.",
+        supabaseField: "vehicle_number = 'NO_PLATE_DETECTED'"
       },
       {
         code: "REJECTED_HUMAN_DETECTED",
-        category: "Pre-screening Safety",
+        category: "SAFETY",
+        categoryName: "Safety Guard",
         badgeClass: "badge-danger",
-        cause: "YOLO pre-screening detected a human presence in front of or near the vehicle.",
-        action: "Ensure all weighbridge operators and pedestrians are clear of the platform zone."
+        cause: "YOLO pre-screening detected human presence in the capture zone near the vehicle.",
+        action: "Ensure all weighbridge operators and pedestrians step clear of the platform during weighing.",
+        supabaseField: "vehicle_number = 'REJECTED_HUMAN_DETECTED'"
       },
       {
         code: "REJECTED_NO_FOUR_WHEELER",
-        category: "Pre-screening",
+        category: "SAFETY",
+        categoryName: "Pre-screening",
         badgeClass: "badge-warning",
-        cause: "Scale weight active, but no 4-wheeler (truck, car, bus) was visually detected in Camera 1.",
-        action: "Verify vehicle is centered on the scale platform and within Camera 1 field of view."
+        cause: "Scale weight active, but no 4-wheeler (truck/car/bus) was visually detected in Camera 1.",
+        action: "Verify vehicle is centered on the scale platform and within Camera 1 field of view.",
+        supabaseField: "vehicle_number = 'REJECTED_NO_FOUR_WHEELER'"
       },
       {
         code: "REJECTED_MULTIPLE_VEHICLES",
-        category: "Pre-screening",
+        category: "SAFETY",
+        categoryName: "Pre-screening",
         badgeClass: "badge-warning",
         cause: "Multiple vehicles detected simultaneously in the Camera 1 capture frame.",
-        action: "Ensure only one vehicle enters the weighbridge at a time."
+        action: "Ensure only one vehicle enters the weighbridge at a time.",
+        supabaseField: "vehicle_number = 'REJECTED_MULTIPLE_VEHICLES'"
       },
       {
         code: "ANPR_TIMEOUT",
-        category: "Network / Inference",
+        category: "ANPR",
+        categoryName: "Inference Timeout",
         badgeClass: "badge-danger",
-        cause: "Argus microservice took longer than 15.0s to compute YOLO + Docling OCR inference.",
-        action: "Check Raspberry Pi CPU utilization or restart the Argus microservice."
+        cause: "Argus microservice took longer than 15.0s to compute YOLO + Docling OCR inference on Raspberry Pi.",
+        action: "Check Raspberry Pi CPU utilization or restart the Argus microservice.",
+        supabaseField: "vehicle_number = 'ANPR_TIMEOUT'"
       },
       {
         code: "ANPR_CONNECTION_ERROR",
-        category: "Microservice",
+        category: "ANPR",
+        categoryName: "Microservice",
         badgeClass: "badge-danger",
-        cause: "Hermes cannot connect to Argus FastAPI at http://127.0.0.1:8000.",
-        action: "Verify Argus is running: `uv run uvicorn app.server:app --host 0.0.0.0 --port 8000`."
+        cause: "Hermes cannot connect to Argus FastAPI server on port 8000.",
+        action: "Start Argus: `uv run uvicorn app.server:app --host 0.0.0.0 --port 8000`.",
+        supabaseField: "vehicle_number = 'ANPR_CONNECTION_ERROR'"
       },
       {
         code: "UART_PORT_ERROR",
-        category: "Scale Interface",
+        category: "SCALE",
+        categoryName: "Scale Hardware",
         badgeClass: "badge-danger",
         cause: "Failed to open serial UART port (/dev/ttyAMA0).",
-        action: "Check physical serial wiring (GPIO 14/15) and verify user permissions (dialout)."
+        action: "Check RS-232/UART wiring on GPIO 14/15 and user dialout permissions.",
+        supabaseField: "Logged in Hermes telemetry"
       },
       {
         code: "SCALE_TIMEOUT",
-        category: "Scale Interface",
+        category: "SCALE",
+        categoryName: "Scale Protocol",
         badgeClass: "badge-warning",
         cause: "Scale serial buffer timeout (>300ms silence without complete weight frame).",
-        action: "Verify scale indicator continuous output mode and baud rate (1200 baud)."
+        action: "Verify scale indicator continuous output mode and 1200 baud setting.",
+        supabaseField: "Logged in Hermes telemetry"
       },
       {
         code: "SUPABASE_AUTH_FAILED",
-        category: "Cloud Sync",
+        category: "CLOUD",
+        categoryName: "Cloud Auth",
         badgeClass: "badge-danger",
         cause: "Invalid operator login credentials (sb_email / sb_pass) in config.json.",
-        action: "Update Supabase credentials in config.json or via operator setup."
+        action: "Update Supabase credentials in config.json or via operator portal.",
+        supabaseField: "Cloud sync paused"
       },
       {
         code: "SUPABASE_UPLOAD_ERROR",
-        category: "Cloud Sync",
+        category: "CLOUD",
+        categoryName: "Cloud Network",
         badgeClass: "badge-danger",
-        cause: "Network connection lost or Supabase REST API unreachable during weighment upload.",
-        action: "Check Wi-Fi/Ethernet connectivity and restore internet access."
+        cause: "Network connection dropped or Supabase REST API unreachable during weighment POST.",
+        action: "Verify Wi-Fi/Ethernet connectivity and restore internet access.",
+        supabaseField: "Logged in Hermes telemetry"
       },
       {
         code: "CAMERA_RTSP_FAILED",
-        category: "Camera Stream",
+        category: "ANPR",
+        categoryName: "Camera Ingestion",
         badgeClass: "badge-danger",
         cause: "OpenCV unable to open RTSP stream from camera IP address.",
-        action: "Verify camera IP (e.g. 192.168.10.251), RTSP port (554), and credentials."
+        action: "Verify camera IP (192.168.10.251), RTSP port (554), and credentials in camera_config.py.",
+        supabaseField: "cam1_final_image = null"
       },
       {
         code: "EMPTY_IMAGE",
-        category: "Camera Ingestion",
+        category: "ANPR",
+        categoryName: "Camera Frame",
         badgeClass: "badge-warning",
         cause: "Camera snapshot returned 0 bytes or corrupted payload.",
-        action: "Check camera network cable, switch power, and RTSP stream stability."
+        action: "Check camera network cable, switch power, and RTSP stream stability.",
+        supabaseField: "vehicle_number = 'EMPTY_IMAGE'"
       }
     ];
 
+    let currentCategory = "ALL";
+
+    function setCategoryFilter(category) {
+      currentCategory = category;
+      ["ALL", "ANPR", "SAFETY", "SCALE", "CLOUD"].forEach(cat => {
+        const btn = document.getElementById("filter-btn-" + cat);
+        if (!btn) return;
+        if (cat === category) {
+          btn.className = "px-3 py-1.5 rounded-xl font-semibold bg-emerald-500 text-slate-950 shadow-sm transition";
+        } else {
+          btn.className = "px-3 py-1.5 rounded-xl font-medium bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition";
+        }
+      });
+      filterErrors();
+    }
+
     function renderErrorCatalog(items) {
       const container = document.getElementById("error-catalog");
-      container.innerHTML = items.map(e => `
-        <div class="p-3.5 rounded-xl bg-slate-900/70 border border-slate-800 space-y-2 hover:border-slate-700 transition">
-          <div class="flex items-center justify-between gap-2">
-            <span class="font-mono font-bold text-white tracking-wide">${e.code}</span>
-            <span class="${e.badgeClass} px-2 py-0.5 rounded-md text-[10px] font-semibold">${e.category}</span>
+      if (items.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-2 text-center py-8 text-slate-500 text-xs">
+            No matching error codes found.
           </div>
-          <p class="text-slate-400 text-[11px] leading-relaxed"><strong class="text-slate-300">Cause:</strong> ${e.cause}</p>
-          <div class="p-2 rounded-lg bg-slate-950/60 border border-slate-800/80 text-[11px] text-emerald-400/90">
-            <strong>Action:</strong> ${e.action}
+        `;
+        return;
+      }
+
+      container.innerHTML = items.map(e => `
+        <div class="glass-panel-interactive p-4 rounded-2xl flex flex-col justify-between space-y-3">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-mono font-bold text-white text-xs tracking-wide select-all">${e.code}</span>
+              <span class="${e.badgeClass} px-2 py-0.5 rounded-md text-[10px] font-bold">${e.categoryName}</span>
+            </div>
+            <p class="text-slate-400 text-[11px] leading-relaxed"><strong class="text-slate-300">Cause:</strong> ${e.cause}</p>
+          </div>
+          <div class="space-y-2 pt-2 border-t border-slate-800/80">
+            <div class="p-2 rounded-xl bg-slate-950/80 border border-slate-800/90 text-[11px] text-emerald-400/95 font-medium leading-relaxed">
+              <strong class="text-emerald-300">Fix:</strong> ${e.action}
+            </div>
+            <div class="text-[10px] text-slate-500 font-mono flex items-center justify-between">
+              <span>Supabase payload:</span>
+              <span class="text-slate-400 truncate max-w-[180px]">${e.supabaseField}</span>
+            </div>
           </div>
         </div>
       `).join("");
@@ -327,12 +516,14 @@
 
     function filterErrors() {
       const query = document.getElementById("error-search").value.toLowerCase();
-      const filtered = ERROR_CODES_DB.filter(e => 
-        e.code.toLowerCase().includes(query) ||
-        e.category.toLowerCase().includes(query) ||
-        e.cause.toLowerCase().includes(query) ||
-        e.action.toLowerCase().includes(query)
-      );
+      const filtered = ERROR_CODES_DB.filter(e => {
+        const matchesCat = (currentCategory === "ALL" || e.category === currentCategory);
+        const matchesQuery = e.code.toLowerCase().includes(query) ||
+                             e.categoryName.toLowerCase().includes(query) ||
+                             e.cause.toLowerCase().includes(query) ||
+                             e.action.toLowerCase().includes(query);
+        return matchesCat && matchesQuery;
+      });
       renderErrorCatalog(filtered);
     }
 
@@ -341,7 +532,10 @@
       input.type = input.type === "password" ? "text" : "password";
     }
 
-    async function fetchStatus() {
+    async function fetchStatus(manual = false) {
+      const refreshIcon = document.getElementById("refresh-icon");
+      if (manual && refreshIcon) refreshIcon.classList.add("rotate-180");
+
       try {
         const res = await fetch("/api/status");
         if (!res.ok) throw new Error("HTTP error " + res.status);
@@ -353,47 +547,79 @@
           ssidInput.value = data.config.wifi_ssid;
         }
 
-        // Scale weight & state
+        // Live Scale Telemetry
         if (data.scale) {
-          document.getElementById("scale-weight-val").textContent = (data.scale.current_weight || 0).toFixed(3) + " kg";
-          document.getElementById("scale-state-info").textContent = "State: " + (data.scale.state || "IDLE");
-          document.getElementById("scale-port-info").textContent = data.scale.port + " @ " + data.scale.baudrate + " baud";
+          const w = (data.scale.current_weight || 0).toFixed(3);
+          document.getElementById("live-weight-val").innerHTML = `${w} <span class="text-base font-normal text-slate-400">kg</span>`;
+          
+          const statePill = document.getElementById("scale-state-pill");
+          statePill.textContent = data.scale.state || "IDLE";
+          if (data.scale.state === "STABLE_CONFIRMED" || data.scale.state === "STABILIZING") {
+            statePill.className = "badge-success px-2 py-0.5 rounded-full text-[10px] font-bold";
+          } else {
+            statePill.className = "bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full text-[10px] font-bold";
+          }
+          document.getElementById("scale-port-val").textContent = `${data.scale.port} @ ${data.scale.baudrate} baud`;
+        }
+
+        if (data.config) {
+          document.getElementById("thresh-val").textContent = `${data.config.min_weight.toFixed(1)} kg`;
+          document.getElementById("center-id-val").textContent = data.config.center_id;
+          document.getElementById("operator-email-val").textContent = data.config.operator_email || "Not set in config.json";
         }
 
         // Argus Microservice status
-        const argusBadge = document.getElementById("argus-status-badge");
+        const argusBadge = document.getElementById("argus-badge");
         if (data.argus && data.argus.online) {
-          argusBadge.className = "badge-success px-2 py-0.5 rounded-full font-medium";
+          argusBadge.className = "badge-success px-2 py-0.5 rounded-full text-[10px] font-bold";
           argusBadge.textContent = "ONLINE (OK)";
         } else {
-          argusBadge.className = "badge-danger px-2 py-0.5 rounded-full font-medium";
+          argusBadge.className = "badge-danger px-2 py-0.5 rounded-full text-[10px] font-bold";
           argusBadge.textContent = "OFFLINE";
+        }
+        if (data.argus && data.argus.url) {
+          document.getElementById("argus-url-val").textContent = data.argus.url;
         }
 
         // Supabase status
-        const sbBadge = document.getElementById("supabase-status-badge");
+        const sbBadge = document.getElementById("supabase-badge");
         if (data.supabase && data.supabase.authenticated) {
-          sbBadge.className = "badge-success px-2 py-0.5 rounded-full font-medium";
+          sbBadge.className = "badge-success px-2 py-0.5 rounded-full text-[10px] font-bold";
           sbBadge.textContent = "AUTHENTICATED";
         } else {
-          sbBadge.className = "badge-warning px-2 py-0.5 rounded-full font-medium";
-          sbBadge.textContent = "UNAUTHENTICATED";
+          sbBadge.className = "badge-warning px-2 py-0.5 rounded-full text-[10px] font-bold";
+          sbBadge.textContent = "STANDBY";
+        }
+
+        // Wi-Fi / Hotspot badge
+        const hsBadge = document.getElementById("hotspot-badge");
+        const ipDisplay = document.getElementById("network-ip-display");
+        if (data.wifi && data.wifi.hotspot_active) {
+          hsBadge.classList.remove("hidden");
+          ipDisplay.textContent = "Hotspot: 10.42.0.1";
+        } else {
+          hsBadge.classList.add("hidden");
+          ipDisplay.textContent = data.wifi && data.wifi.connected ? "Wi-Fi Connected" : "Local Network";
         }
 
         // Event logs
         if (data.events && data.events.length > 0) {
           const logDiv = document.getElementById("events-log");
           logDiv.innerHTML = data.events.map(ev => `
-            <div class="text-slate-300">
-              <span class="text-slate-500">[${ev.time || 'NOW'}]</span>
-              <span class="text-emerald-400 font-semibold">[${ev.source || 'SYSTEM'}]</span>
-              ${ev.message}
+            <div class="flex items-start gap-2">
+              <span class="text-slate-500 flex-shrink-0">[${ev.time || 'NOW'}]</span>
+              <span class="text-emerald-400 font-bold flex-shrink-0">[${ev.source || 'SYSTEM'}]</span>
+              <span class="text-slate-300 break-words">${ev.message}</span>
             </div>
           `).join("");
         }
 
       } catch (err) {
         console.warn("Status fetch warning:", err);
+      } finally {
+        if (manual && refreshIcon) {
+          setTimeout(() => refreshIcon.classList.remove("rotate-180"), 500);
+        }
       }
     }
 
@@ -402,6 +628,16 @@
       const ssid = document.getElementById("wifi-ssid").value.trim();
       const password = document.getElementById("wifi-password").value;
       const alert = document.getElementById("wifi-alert");
+      const btn = document.getElementById("save-wifi-btn");
+
+      btn.disabled = true;
+      btn.innerHTML = `
+        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Connecting to ${ssid}...
+      `;
 
       try {
         const res = await fetch("/api/wifi", {
@@ -410,12 +646,21 @@
           body: JSON.stringify({ ssid, password })
         });
         const resp = await res.json();
-        alert.className = "text-xs p-3 rounded-lg bg-emerald-950/80 border border-emerald-700 text-emerald-300 block";
-        alert.textContent = resp.message || "Wi-Fi configurations saved to config.json successfully.";
+
+        if (res.ok && resp.success) {
+          alert.className = "p-3.5 rounded-xl bg-emerald-950/90 border border-emerald-700 text-emerald-200 block text-xs leading-relaxed";
+          alert.innerHTML = `<strong>✅ Success!</strong> ${resp.message}<br><span class="text-emerald-400">Pi is now connected to ${ssid}. You can now access Hermes from your normal Wi-Fi!</span>`;
+        } else {
+          alert.className = "p-3.5 rounded-xl bg-rose-950/90 border border-rose-700 text-rose-200 block text-xs leading-relaxed";
+          alert.innerHTML = `<strong>⚠️ Warning:</strong> ${resp.message || resp.error || 'Connection failed'}`;
+        }
         fetchStatus();
       } catch (err) {
-        alert.className = "text-xs p-3 rounded-lg bg-rose-950/80 border border-rose-700 text-rose-300 block";
-        alert.textContent = "Failed to save Wi-Fi configuration: " + err.message;
+        alert.className = "p-3.5 rounded-xl bg-rose-950/90 border border-rose-700 text-rose-200 block text-xs leading-relaxed";
+        alert.innerHTML = `<strong>❌ Error:</strong> ${err.message}`;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Save & Connect</span>`;
       }
     }
 
@@ -427,16 +672,16 @@
         const resp = await res.json();
         document.getElementById("wifi-ssid").value = "";
         document.getElementById("wifi-password").value = "";
-        alert.className = "text-xs p-3 rounded-lg bg-amber-950/80 border border-amber-700 text-amber-300 block";
-        alert.textContent = resp.message || "Wi-Fi credentials cleared.";
+        alert.className = "p-3.5 rounded-xl bg-amber-950/90 border border-amber-700 text-amber-200 block text-xs leading-relaxed";
+        alert.textContent = resp.message || "Wi-Fi credentials cleared from config.json.";
         fetchStatus();
       } catch (err) {
-        alert.className = "text-xs p-3 rounded-lg bg-rose-950/80 border border-rose-700 text-rose-300 block";
+        alert.className = "p-3.5 rounded-xl bg-rose-950/90 border border-rose-700 text-rose-200 block text-xs leading-relaxed";
         alert.textContent = "Failed to clear Wi-Fi credentials: " + err.message;
       }
     }
 
-    // Initialize
+    // Initialize catalog and status loop
     renderErrorCatalog(ERROR_CODES_DB);
     fetchStatus();
     setInterval(fetchStatus, 3000);

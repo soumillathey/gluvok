@@ -28,10 +28,12 @@ class TestFallbackWebServer(unittest.TestCase):
             content_type = res.headers.get("Content-Type", "")
             self.assertIn("text/html", content_type)
             html_body = res.read().decode("utf-8")
-            self.assertIn("Hermes Weighbridge Controller", html_body)
+            self.assertIn("Gluvok Hermes", html_body)
             self.assertIn("tailwindcss", html_body)
             self.assertIn("NO_PLATE_DETECTED", html_body)
             self.assertIn("REJECTED_HUMAN_DETECTED", html_body)
+
+
 
     def test_get_api_status(self):
         url = f"http://127.0.0.1:{self.test_port}/api/status"
