@@ -93,12 +93,23 @@ class FallbackHTTPRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(response_bytes)
 
     def do_GET(self):
-        if self.path == "/" or self.path.startswith("/index"):
+        valid_page_routes = (
+            "/",
+            "/index",
+            "/scale",
+            "/anpr",
+            "/cloud",
+            "/wifi",
+            "/telemetry",
+            "/errors",
+        )
+        if self.path in valid_page_routes or self.path.startswith("/index"):
             self._serve_index_html()
         elif self.path == "/api/status":
             self._handle_get_status()
         else:
             self.send_error(404, "Endpoint not found")
+
 
     def do_POST(self):
         if self.path == "/api/wifi":

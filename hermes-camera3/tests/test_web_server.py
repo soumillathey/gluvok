@@ -33,6 +33,15 @@ class TestFallbackWebServer(unittest.TestCase):
             self.assertIn("NO_PLATE_DETECTED", html_body)
             self.assertIn("REJECTED_HUMAN_DETECTED", html_body)
 
+    def test_subsystem_page_routes(self):
+        for route in ("/scale", "/anpr", "/cloud", "/wifi", "/telemetry"):
+            url = f"http://127.0.0.1:{self.test_port}{route}"
+            with urllib.request.urlopen(url, timeout=3.0) as res:
+                self.assertEqual(res.status, 200)
+                content_type = res.headers.get("Content-Type", "")
+                self.assertIn("text/html", content_type)
+
+
 
 
     def test_get_api_status(self):

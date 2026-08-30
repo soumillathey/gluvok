@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gluvok Hermes — Diagnostic Console & Wi-Fi Setup</title>
+  <title>Gluvok Hermes — Industrial Console & Subsystem Diagnostics</title>
   
   <!-- Modern Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -112,14 +112,14 @@
         <div>
           <div class="flex items-center gap-2.5 flex-wrap">
             <h1 class="text-2xl font-extrabold tracking-tight text-white">Gluvok Hermes</h1>
-            <span class="px-3 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">v0.1.0 RPi</span>
+            <span class="px-3 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Subsystem Suite</span>
             <span id="hotspot-badge" class="hidden px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">Hotspot Active</span>
           </div>
-          <p class="text-xs sm:text-sm text-slate-400 mt-0.5 font-medium">Industrial Weighbridge Multi-Camera & ANPR Controller</p>
+          <p class="text-xs sm:text-sm text-slate-400 mt-0.5 font-medium">Modular Diagnostics & Industrial Weighbridge Control Center</p>
         </div>
       </div>
 
-      <!-- Action Buttons & Status Pill -->
+      <!-- Live Connection Pill & Global Refresh -->
       <div class="flex items-center gap-3 self-start md:self-auto flex-wrap">
         <div id="live-indicator" class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900/80 border border-slate-800 text-xs font-semibold text-emerald-400">
           <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -135,125 +135,351 @@
       </div>
     </header>
 
-    <!-- Real-Time Metrics & Telemetry Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Subsystem Navigation Tabs -->
+    <nav class="glass-panel p-2 rounded-2xl border border-slate-800/80 shadow-lg flex items-center gap-1.5 overflow-x-auto custom-scrollbar">
+      <button onclick="switchTab('overview')" id="tab-btn-overview" class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs bg-emerald-500 text-slate-950 shadow-md transition whitespace-nowrap">
+        <span>🏠</span> Overview
+      </button>
+      <button onclick="switchTab('scale')" id="tab-btn-scale" class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-xs text-slate-400 hover:text-white hover:bg-slate-800/60 transition whitespace-nowrap">
+        <span>⚖️</span> Scale Indicator
+      </button>
+      <button onclick="switchTab('anpr')" id="tab-btn-anpr" class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-xs text-slate-400 hover:text-white hover:bg-slate-800/60 transition whitespace-nowrap">
+        <span>📸</span> ANPR & Cameras
+      </button>
+      <button onclick="switchTab('cloud')" id="tab-btn-cloud" class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-xs text-slate-400 hover:text-white hover:bg-slate-800/60 transition whitespace-nowrap">
+        <span>☁️</span> Cloud Data Transfer
+      </button>
+      <button onclick="switchTab('wifi')" id="tab-btn-wifi" class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-xs text-slate-400 hover:text-white hover:bg-slate-800/60 transition whitespace-nowrap">
+        <span>📶</span> Wi-Fi Setup
+      </button>
+      <button onclick="switchTab('telemetry')" id="tab-btn-telemetry" class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-xs text-slate-400 hover:text-white hover:bg-slate-800/60 transition whitespace-nowrap">
+        <span>📋</span> Telemetry Logs
+      </button>
+    </nav>
+
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <!-- TAB 1: OVERVIEW PAGE                                                  -->
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <div id="view-overview" class="space-y-6">
       
-      <!-- Card 1: Scale Indicator Weight -->
-      <div class="glass-panel p-5 rounded-3xl border border-slate-800 flex flex-col justify-between relative overflow-hidden group">
-        <div class="flex items-center justify-between text-xs text-slate-400 font-medium">
-          <span class="flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            Live Scale Indicator
-          </span>
-          <span id="scale-state-pill" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300">IDLE</span>
+      <!-- Metrics Quick Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Scale Quick Card -->
+        <div onclick="switchTab('scale')" class="glass-panel-interactive p-5 rounded-3xl border border-slate-800 flex flex-col justify-between cursor-pointer">
+          <div class="flex items-center justify-between text-xs text-slate-400 font-medium">
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Scale Indicator</span>
+            <span id="ov-scale-state" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300">IDLE</span>
+          </div>
+          <div class="my-3">
+            <div id="ov-weight" class="text-3xl font-extrabold font-mono text-emerald-400">0.000 <span class="text-base font-normal text-slate-400">kg</span></div>
+            <div class="text-[11px] font-mono text-slate-500 mt-1">/dev/ttyAMA0 @ 1200 baud</div>
+          </div>
+          <div class="text-[11px] text-slate-400 flex items-center justify-between border-t border-slate-800/80 pt-2.5">
+            <span>View Subsystem &rarr;</span>
+            <span class="text-emerald-400 font-semibold">10s Stability</span>
+          </div>
         </div>
-        <div class="my-3">
-          <div id="live-weight-val" class="text-3xl sm:text-4xl font-extrabold font-mono text-emerald-400 tracking-tight">0.000 <span class="text-base font-normal text-slate-400">kg</span></div>
-          <div id="scale-port-val" class="text-[11px] font-mono text-slate-500 mt-1">/dev/ttyAMA0 @ 1200 baud</div>
+
+        <!-- ANPR Quick Card -->
+        <div onclick="switchTab('anpr')" class="glass-panel-interactive p-5 rounded-3xl border border-slate-800 flex flex-col justify-between cursor-pointer">
+          <div class="flex items-center justify-between text-xs text-slate-400 font-medium">
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-sky-400"></span> ANPR Engine</span>
+            <span id="ov-argus-badge" class="badge-info px-2 py-0.5 rounded-full text-[10px] font-bold">CHECKING...</span>
+          </div>
+          <div class="my-3">
+            <div class="text-lg font-bold text-white">YOLO v11 + Docling</div>
+            <div class="text-[11px] font-mono text-slate-400 mt-1 truncate">FastAPI on :8000</div>
+          </div>
+          <div class="text-[11px] text-slate-400 flex items-center justify-between border-t border-slate-800/80 pt-2.5">
+            <span>View Subsystem &rarr;</span>
+            <span class="text-sky-400 font-semibold">Consensus Voting</span>
+          </div>
         </div>
-        <div class="text-[11px] text-slate-400 flex items-center justify-between border-t border-slate-800/80 pt-2.5">
-          <span>Threshold: <strong id="thresh-val" class="text-slate-300">50.0 kg</strong></span>
-          <span class="text-emerald-400 font-semibold">10s Stability</span>
+
+        <!-- Cloud Quick Card -->
+        <div onclick="switchTab('cloud')" class="glass-panel-interactive p-5 rounded-3xl border border-slate-800 flex flex-col justify-between cursor-pointer">
+          <div class="flex items-center justify-between text-xs text-slate-400 font-medium">
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Cloud Sync</span>
+            <span id="ov-sb-badge" class="badge-warning px-2 py-0.5 rounded-full text-[10px] font-bold">READY</span>
+          </div>
+          <div class="my-3">
+            <div class="text-lg font-bold text-white">Supabase REST</div>
+            <div id="ov-center-id" class="text-[11px] text-slate-400 mt-1">Center ID: 1</div>
+          </div>
+          <div class="text-[11px] text-slate-400 flex items-center justify-between border-t border-slate-800/80 pt-2.5">
+            <span>View Subsystem &rarr;</span>
+            <span class="text-emerald-400 font-semibold">Pure In-RAM</span>
+          </div>
+        </div>
+
+        <!-- Wi-Fi Quick Card -->
+        <div onclick="switchTab('wifi')" class="glass-panel-interactive p-5 rounded-3xl border border-slate-800 flex flex-col justify-between cursor-pointer">
+          <div class="flex items-center justify-between text-xs text-slate-400 font-medium">
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-400"></span> Network Mode</span>
+            <span id="ov-wifi-badge" class="badge-success px-2 py-0.5 rounded-full text-[10px] font-bold">WI-FI</span>
+          </div>
+          <div class="my-3">
+            <div id="ov-wifi-ssid" class="text-lg font-bold text-white truncate">Setup Portal</div>
+            <div class="text-[11px] text-slate-400 mt-1">Emergency Hotspot Ready</div>
+          </div>
+          <div class="text-[11px] text-slate-400 flex items-center justify-between border-t border-slate-800/80 pt-2.5">
+            <span>View Subsystem &rarr;</span>
+            <span class="text-amber-400 font-semibold">Auto-Fallback</span>
+          </div>
         </div>
       </div>
 
-      <!-- Card 2: Argus ANPR Microservice -->
-      <div class="glass-panel p-5 rounded-3xl border border-slate-800 flex flex-col justify-between relative overflow-hidden group">
-        <div class="flex items-center justify-between text-xs text-slate-400 font-medium">
-          <span class="flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-sky-400"></span>
-            Argus ANPR Engine
-          </span>
-          <span id="argus-badge" class="badge-info px-2 py-0.5 rounded-full text-[10px] font-bold">CHECKING...</span>
+      <!-- Live Session Banner -->
+      <div class="glass-panel p-6 rounded-3xl border border-slate-800 shadow-xl space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+            Latest Weighbridge Session Telemetry
+          </h3>
+          <span id="ov-last-time" class="text-xs font-mono text-slate-500">Awaiting weighing</span>
         </div>
-        <div class="my-3">
-          <div class="text-lg font-bold text-white flex items-center gap-2">
-            YOLO v11 + Docling
-          </div>
-          <div id="argus-url-val" class="text-[11px] font-mono text-slate-400 mt-1 truncate">http://127.0.0.1:8000</div>
-        </div>
-        <div class="text-[11px] text-slate-400 flex items-center justify-between border-t border-slate-800/80 pt-2.5">
-          <span>Timeout: <strong>15.0s</strong></span>
-          <span class="text-sky-400 font-semibold">FastAPI Microservice</span>
-        </div>
-      </div>
 
-      <!-- Card 3: Camera System -->
-      <div class="glass-panel p-5 rounded-3xl border border-slate-800 flex flex-col justify-between relative overflow-hidden group">
-        <div class="flex items-center justify-between text-xs text-slate-400 font-medium">
-          <span class="flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-teal-400"></span>
-            Cameras
-          </span>
-          <span class="badge-success px-2 py-0.5 rounded-full text-[10px] font-bold">READY</span>
-        </div>
-        <div class="my-3">
-          <div class="text-lg font-bold text-white flex items-center gap-2">
-            Camera 1 (ANPR RTSP)
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800">
+            <div class="text-[10px] font-medium text-slate-400 uppercase">Recognized Plate / Error Code</div>
+            <div id="ov-plate" class="text-xl font-extrabold font-mono text-emerald-400 mt-1 truncate">READY</div>
           </div>
-          <div id="aux-cam-count" class="text-[11px] text-slate-400 mt-1">1 Auxiliary overview camera</div>
-        </div>
-        <div class="text-[11px] text-slate-400 flex items-center justify-between border-t border-slate-800/80 pt-2.5">
-          <span>Storage: <strong class="text-emerald-400">Pure RAM</strong></span>
-          <span class="text-slate-400">0 Disk I/O</span>
-        </div>
-      </div>
-
-      <!-- Card 4: Supabase Cloud Sync -->
-      <div class="glass-panel p-5 rounded-3xl border border-slate-800 flex flex-col justify-between relative overflow-hidden group">
-        <div class="flex items-center justify-between text-xs text-slate-400 font-medium">
-          <span class="flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-            Cloud Sync
-          </span>
-          <span id="supabase-badge" class="badge-warning px-2 py-0.5 rounded-full text-[10px] font-bold">READY</span>
-        </div>
-        <div class="my-3">
-          <div class="text-lg font-bold text-white flex items-center gap-2">
-            Center ID: <span id="center-id-val" class="text-emerald-400 font-mono">1</span>
+          <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800">
+            <div class="text-[10px] font-medium text-slate-400 uppercase">Confirmed Weight</div>
+            <div id="ov-confirmed-weight" class="text-xl font-extrabold font-mono text-white mt-1">0.000 kg</div>
           </div>
-          <div id="operator-email-val" class="text-[11px] text-slate-400 mt-1 truncate">Operator configured</div>
-        </div>
-        <div class="text-[11px] text-slate-400 flex items-center justify-between border-t border-slate-800/80 pt-2.5">
-          <span>Table: <code class="text-slate-300">weighments</code></span>
-          <span class="text-emerald-400 font-semibold">HTTPS REST</span>
+          <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800">
+            <div class="text-[10px] font-medium text-slate-400 uppercase">Session ID</div>
+            <div id="ov-session-id" class="text-xs font-mono text-slate-400 mt-2 truncate">None</div>
+          </div>
         </div>
       </div>
 
     </div>
 
-    <!-- Main Section: Wi-Fi Setup & Live Diagnostics / Error Directory -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-      <!-- Left Column: Wi-Fi Emergency Configuration (4 cols) -->
-      <div class="lg:col-span-4 space-y-6">
-        
-        <div class="glass-panel p-6 rounded-3xl border border-slate-800 shadow-xl space-y-5">
-          <div class="flex items-center justify-between pb-3 border-b border-slate-800/80">
-            <div class="flex items-center gap-2.5">
-              <div class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/>
-                </svg>
-              </div>
-              <div>
-                <h2 class="text-base font-bold text-white">Wi-Fi Configuration</h2>
-                <p class="text-[11px] text-slate-400">Emergency setup & connection</p>
-              </div>
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <!-- TAB 2: SCALE INDICATOR SUBSYSTEM                                      -->
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <div id="view-scale" class="hidden space-y-6">
+      <div class="glass-panel p-6 rounded-3xl border border-slate-800 space-y-6">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+          <div class="flex items-center gap-3">
+            <div class="p-3 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-2xl">⚖️</div>
+            <div>
+              <h2 class="text-xl font-bold text-white">Scale & Weighment Subsystem</h2>
+              <p class="text-xs text-slate-400">RS-232 UART stream reader, 10-second stability detector & zero-reset lifecycle</p>
             </div>
-            <span class="text-[11px] font-mono px-2 py-0.5 rounded-lg bg-slate-800 text-slate-400 border border-slate-700/60">wlan0</span>
+          </div>
+          <span id="scale-live-status-pill" class="badge-success px-3 py-1 rounded-full text-xs font-bold">UART ACTIVE</span>
+        </div>
+
+        <!-- Scale Big LED Gauge -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+          <div class="p-6 rounded-3xl bg-slate-950 border border-slate-800 md:col-span-2 space-y-3">
+            <div class="flex items-center justify-between text-xs text-slate-400">
+              <span>CURRENT WEIGHBRIDGE LOAD</span>
+              <span id="scale-state-detail" class="font-mono text-emerald-400 font-bold">STATE: IDLE</span>
+            </div>
+            <div id="scale-page-weight" class="text-5xl sm:text-6xl font-black font-mono text-emerald-400 tracking-tight">0.000 <span class="text-2xl font-normal text-slate-500">kg</span></div>
+            <div class="text-xs text-slate-400 flex items-center justify-between pt-2 border-t border-slate-900">
+              <span>Threshold Trigger: <strong class="text-slate-200" id="scale-thresh-disp">50.0 kg</strong></span>
+              <span>Tolerance: <strong class="text-slate-200">&plusmn;2.0 kg</strong></span>
+              <span>Stability Window: <strong class="text-emerald-400">10.0s</strong></span>
+            </div>
           </div>
 
-          <form id="wifi-form" onsubmit="saveWifi(event)" class="space-y-4 text-xs">
+          <!-- Port Details -->
+          <div class="p-5 rounded-3xl bg-slate-900/60 border border-slate-800 space-y-3 text-xs">
+            <h4 class="font-bold text-white">Interface Configuration</h4>
+            <div class="space-y-2 font-mono text-[11px] text-slate-300">
+              <div class="flex justify-between"><span>Serial Port:</span><span class="text-emerald-400">/dev/ttyAMA0</span></div>
+              <div class="flex justify-between"><span>Baud Rate:</span><span class="text-emerald-400">1200 baud</span></div>
+              <div class="flex justify-between"><span>Data / Stop:</span><span>8 / 1</span></div>
+              <div class="flex justify-between"><span>Inter-char Timeout:</span><span>300 ms</span></div>
+              <div class="flex justify-between"><span>Hardware Pins:</span><span>GPIO 14 (TX), 15 (RX)</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scale Dedicated Error Codes -->
+        <div class="space-y-4 pt-4 border-t border-slate-800">
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider">Scale Subsystem Error Codes & Diagnostics</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="glass-panel-interactive p-4 rounded-2xl space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-mono font-bold text-white text-xs">UART_PORT_ERROR</span>
+                <span class="badge-danger px-2 py-0.5 rounded text-[10px] font-bold">Hardware Fault</span>
+              </div>
+              <p class="text-slate-400 text-xs"><strong>Cause:</strong> Failed to open serial port (/dev/ttyAMA0). Permissions or physical port busy.</p>
+              <div class="p-2 rounded-xl bg-slate-950 text-[11px] text-emerald-400 font-medium">
+                <strong>Fix:</strong> Check user dialout group permissions and verify RS-232 converter connection to Raspberry Pi GPIO 14/15.
+              </div>
+            </div>
+            <div class="glass-panel-interactive p-4 rounded-2xl space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-mono font-bold text-white text-xs">SCALE_TIMEOUT</span>
+                <span class="badge-warning px-2 py-0.5 rounded text-[10px] font-bold">Protocol Sync</span>
+              </div>
+              <p class="text-slate-400 text-xs"><strong>Cause:</strong> Serial buffer timeout (>300ms silence without complete indicator weight frame).</p>
+              <div class="p-2 rounded-xl bg-slate-950 text-[11px] text-emerald-400 font-medium">
+                <strong>Fix:</strong> Verify scale indicator is set to continuous transmission mode and baud rate is configured to 1200 baud.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <!-- TAB 3: ANPR & MULTI-CAMERA SUBSYSTEM                                  -->
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <div id="view-anpr" class="hidden space-y-6">
+      <div class="glass-panel p-6 rounded-3xl border border-slate-800 space-y-6">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+          <div class="flex items-center gap-3">
+            <div class="p-3 rounded-2xl bg-sky-500/10 text-sky-400 border border-sky-500/20 text-2xl">📸</div>
             <div>
-              <label class="block font-semibold text-slate-300 mb-1.5">Network Name (SSID)</label>
-              <input type="text" id="wifi-ssid" required placeholder="e.g. Factory_WiFi_5G" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition">
+              <h2 class="text-xl font-bold text-white">ANPR & Multi-Camera Subsystem</h2>
+              <p class="text-xs text-slate-400">RTSP ingestion, YOLO v11 pre-screening, Docling OCR engine & voting consensus</p>
+            </div>
+          </div>
+          <span id="anpr-live-status-pill" class="badge-info px-3 py-1 rounded-full text-xs font-bold">ARGUS :8000</span>
+        </div>
+
+        <!-- Camera Network Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-white">Camera 1 (Primary ANPR)</span>
+              <span class="badge-success px-2 py-0.5 rounded text-[10px] font-bold">RTSP STREAM</span>
+            </div>
+            <div class="font-mono text-[11px] text-slate-400 truncate">rtsp://admin:***@192.168.10.251:554/video/live</div>
+            <div class="text-[11px] text-slate-400">Captures 1 frame every 2.0s during active weighment session. Pure RAM storage.</div>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-white">Camera 2 (Auxiliary Overview)</span>
+              <span class="badge-success px-2 py-0.5 rounded text-[10px] font-bold">HTTP SNAPSHOT</span>
+            </div>
+            <div class="font-mono text-[11px] text-slate-400 truncate">https://admin:***@192.168.10.250/ISAPI/Streaming/channels/1/picture</div>
+            <div class="text-[11px] text-slate-400">Parallel snapshot on 10s confirmed weight stability. SSL verify=False.</div>
+          </div>
+        </div>
+
+        <!-- Dedicated ANPR Error Code Grid -->
+        <div class="space-y-4 pt-4 border-t border-slate-800">
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider">ANPR & Safety Error Directory</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="anpr-error-cards">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <!-- TAB 4: CLOUD DATA TRANSFER SUBSYSTEM                                  -->
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <div id="view-cloud" class="hidden space-y-6">
+      <div class="glass-panel p-6 rounded-3xl border border-slate-800 space-y-6">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+          <div class="flex items-center gap-3">
+            <div class="p-3 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-2xl">☁️</div>
+            <div>
+              <h2 class="text-xl font-bold text-white">Cloud Data Transfer Subsystem</h2>
+              <p class="text-xs text-slate-400">Supabase REST API, JWT authentication, multipart payloads & RAM memory purging</p>
+            </div>
+          </div>
+          <span id="cloud-live-status-pill" class="badge-success px-3 py-1 rounded-full text-xs font-bold">HTTPS REST</span>
+        </div>
+
+        <!-- Cloud Parameters & Payload Inspector -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="p-5 rounded-3xl bg-slate-900/60 border border-slate-800 space-y-3 text-xs">
+            <h4 class="font-bold text-white">Cloud Sync Configuration</h4>
+            <div class="space-y-2 font-mono text-[11px] text-slate-300">
+              <div class="flex justify-between"><span>Endpoint:</span><span class="text-emerald-400">/rest/v1/weighments</span></div>
+              <div class="flex justify-between"><span>Center ID:</span><span id="cloud-center-id-val" class="text-white">1</span></div>
+              <div class="flex justify-between"><span>Operator Email:</span><span id="cloud-email-val" class="text-slate-400 truncate">Configured</span></div>
+              <div class="flex justify-between"><span>Payload Clear:</span><span class="text-emerald-400">Immediate RAM purge</span></div>
+              <div class="flex justify-between"><span>Fallback Error Mode:</span><span class="text-emerald-400">Exact Argus code</span></div>
+            </div>
+          </div>
+
+          <div class="p-5 rounded-3xl bg-slate-950 border border-slate-800 md:col-span-2 space-y-2">
+            <div class="flex items-center justify-between text-xs text-slate-400">
+              <span class="font-bold text-white">Supabase JSON Payload Schema</span>
+              <span class="text-[10px] font-mono text-emerald-400">Auto-Generated</span>
+            </div>
+            <pre class="custom-scrollbar p-3 rounded-xl bg-slate-900/90 font-mono text-[11px] text-emerald-300 overflow-x-auto"><code>{
+  "center_id": 1,
+  "vehicle_number": "RJ09GA0165" | "NO_PLATE_DETECTED" | "REJECTED_HUMAN_DETECTED",
+  "weight": 70000.0,
+  "cam1_image_base64": "data:image/jpeg;base64,...",
+  "cam2_image_base64": "data:image/jpeg;base64,...",
+  "created_at": "2026-08-31T01:11:14Z"
+}</code></pre>
+          </div>
+        </div>
+
+        <!-- Cloud Dedicated Error Codes -->
+        <div class="space-y-4 pt-4 border-t border-slate-800">
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider">Cloud Data Transfer Error Codes</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="glass-panel-interactive p-4 rounded-2xl space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-mono font-bold text-white text-xs">SUPABASE_AUTH_FAILED</span>
+                <span class="badge-danger px-2 py-0.5 rounded text-[10px] font-bold">Authentication</span>
+              </div>
+              <p class="text-slate-400 text-xs"><strong>Cause:</strong> Invalid operator login credentials (sb_email / sb_pass) in config.json.</p>
+              <div class="p-2 rounded-xl bg-slate-950 text-[11px] text-emerald-400 font-medium">
+                <strong>Fix:</strong> Re-enter operator email and password in config.json or verify Supabase project JWT keys.
+              </div>
+            </div>
+            <div class="glass-panel-interactive p-4 rounded-2xl space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-mono font-bold text-white text-xs">SUPABASE_UPLOAD_ERROR</span>
+                <span class="badge-danger px-2 py-0.5 rounded text-[10px] font-bold">Network Drop</span>
+              </div>
+              <p class="text-slate-400 text-xs"><strong>Cause:</strong> Network connection lost or Supabase REST API unreachable during weighment transmission.</p>
+              <div class="p-2 rounded-xl bg-slate-950 text-[11px] text-emerald-400 font-medium">
+                <strong>Fix:</strong> Check Wi-Fi router internet connection or mobile hotspot connectivity.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <!-- TAB 5: WI-FI & NETWORK RECOVERY SUBSYSTEM                             -->
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <div id="view-wifi" class="hidden space-y-6">
+      <div class="glass-panel p-6 rounded-3xl border border-slate-800 space-y-6">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+          <div class="flex items-center gap-3">
+            <div class="p-3 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 text-2xl">📶</div>
+            <div>
+              <h2 class="text-xl font-bold text-white">Wi-Fi & Emergency Network Recovery</h2>
+              <p class="text-xs text-slate-400">Automatic watchdog, emergency Access Point fallback (`Gluvok-Setup`) & credentials setup</p>
+            </div>
+          </div>
+          <span id="wifi-live-status-pill" class="badge-warning px-3 py-1 rounded-full text-xs font-bold">HOTSPOT READY</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Wi-Fi Form -->
+          <form onsubmit="saveWifi(event)" class="space-y-4 text-xs">
+            <h4 class="font-bold text-white text-sm">Update Wi-Fi Network Credentials</h4>
+            <div>
+              <label class="block font-semibold text-slate-300 mb-1.5">Network SSID</label>
+              <input type="text" id="wifi-ssid" required placeholder="e.g. Factory_WiFi_5G" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition">
             </div>
 
             <div>
               <label class="block font-semibold text-slate-300 mb-1.5">Wi-Fi Password</label>
               <div class="relative">
-                <input type="password" id="wifi-password" placeholder="Enter password" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition pr-11">
+                <input type="password" id="wifi-password" placeholder="Enter password" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition pr-11">
                 <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-200 text-xs px-1 py-0.5 rounded transition">
                   👁️
                 </button>
@@ -272,111 +498,43 @@
             </div>
           </form>
 
-          <div class="p-3.5 rounded-2xl bg-slate-900/40 border border-slate-800/80 text-[11px] text-slate-400 space-y-1.5">
-            <div class="font-semibold text-slate-300 flex items-center gap-1.5">
-              <span>💡</span> Network Auto-Recovery
+          <!-- Hotspot Guide -->
+          <div class="p-5 rounded-3xl bg-slate-900/60 border border-slate-800 space-y-3 text-xs leading-relaxed">
+            <h4 class="font-bold text-white text-sm">Emergency Hotspot Details</h4>
+            <p class="text-slate-400">If the Raspberry Pi cannot connect to any Wi-Fi network, Hermes automatically spins up an Access Point on <code class="text-emerald-400 font-mono">wlan0</code>.</p>
+            <div class="p-3.5 rounded-2xl bg-slate-950 space-y-1.5 font-mono text-[11px]">
+              <div><strong class="text-slate-400">Hotspot SSID:</strong> <span class="text-amber-300">Gluvok-Setup</span></div>
+              <div><strong class="text-slate-400">Password:</strong> <span class="text-amber-300">gluvok1234</span></div>
+              <div><strong class="text-slate-400">Hotspot URL:</strong> <span class="text-emerald-400">http://10.42.0.1:8080</span></div>
+              <div><strong class="text-slate-400">Ethernet LAN:</strong> <span class="text-sky-400">http://192.168.10.10:8080</span></div>
             </div>
-            <p>If site Wi-Fi disconnects, Hermes automatically broadcasts <code class="text-amber-300 font-mono">Gluvok-Setup</code> (Pass: <code class="text-amber-300 font-mono">gluvok1234</code>) so you can reconnect anytime.</p>
           </div>
         </div>
-
-        <!-- Live Telemetry Stream -->
-        <div class="glass-panel p-5 rounded-3xl border border-slate-800 shadow-xl space-y-3">
-          <div class="flex items-center justify-between">
-            <h3 class="text-xs font-bold text-slate-200 flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              Live Telemetry Log
-            </h3>
-            <span class="text-[10px] text-slate-500 font-mono">Real-Time</span>
-          </div>
-
-          <div id="events-log" class="custom-scrollbar p-3.5 rounded-2xl bg-slate-950 border border-slate-900 font-mono text-[11px] text-slate-300 space-y-1.5 max-h-48 overflow-y-auto leading-relaxed">
-            <div class="text-slate-600">[System] Initializing live telemetry stream...</div>
-          </div>
-        </div>
-
       </div>
+    </div>
 
-      <!-- Right Column: Live Session Outcome & Error Codes Directory (8 cols) -->
-      <div class="lg:col-span-8 space-y-6">
-        
-        <!-- Live Weighment Outcome & Active Alerts Banner -->
-        <div id="live-weighment-card" class="glass-panel p-5 sm:p-6 rounded-3xl border border-slate-800 shadow-xl space-y-4">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="flex h-3 w-3 relative">
-                <span id="live-pulse-anim" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span id="live-pulse-dot" class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-              </span>
-              <h3 class="text-sm font-bold text-white uppercase tracking-wider">Latest Weighbridge Session Outcome</h3>
-            </div>
-            <span id="last-weigh-time" class="text-xs font-mono text-slate-500">Awaiting weighing</span>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="p-3.5 rounded-2xl bg-slate-900/70 border border-slate-800">
-              <div class="text-[10px] font-medium text-slate-400 uppercase">Recognized Plate / Status</div>
-              <div id="live-plate-display" class="text-lg font-extrabold font-mono text-emerald-400 mt-1 truncate">READY</div>
-            </div>
-            <div class="p-3.5 rounded-2xl bg-slate-900/70 border border-slate-800">
-              <div class="text-[10px] font-medium text-slate-400 uppercase">Confirmed Weight</div>
-              <div id="live-confirmed-weight" class="text-lg font-extrabold font-mono text-white mt-1">0.000 kg</div>
-            </div>
-            <div class="p-3.5 rounded-2xl bg-slate-900/70 border border-slate-800">
-              <div class="text-[10px] font-medium text-slate-400 uppercase">Session ID</div>
-              <div id="live-session-id" class="text-xs font-mono text-slate-400 mt-2 truncate">None</div>
-            </div>
-          </div>
-
-          <div id="live-recommendation" class="hidden p-3 rounded-xl text-xs font-medium leading-relaxed">
-            <!-- Recommendation text -->
-          </div>
-        </div>
-
-        <!-- Comprehensive Error Codes Directory -->
-        <div class="glass-panel p-6 rounded-3xl border border-slate-800 shadow-xl space-y-5">
-          
-          <!-- Title & Search Bar -->
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-800/80">
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <!-- TAB 6: TELEMETRY & EVENT LOGS SUBSYSTEM                               -->
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <div id="view-telemetry" class="hidden space-y-6">
+      <div class="glass-panel p-6 rounded-3xl border border-slate-800 space-y-6">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+          <div class="flex items-center gap-3">
+            <div class="p-3 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-2xl">📋</div>
             <div>
-              <h2 class="text-lg font-bold text-white flex items-center gap-2.5">
-                <div class="p-2 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                  </svg>
-                </div>
-                Error Code Directory & Live Diagnostics
-              </h2>
-              <p class="text-xs text-slate-400 mt-1">Live tracking of error occurrences forwarded to Supabase in place of license plates</p>
-            </div>
-            
-            <!-- Search input -->
-            <div class="relative w-full sm:w-64">
-              <input type="text" id="error-search" oninput="filterErrors()" placeholder="Search error codes..." class="w-full pl-9 pr-3.5 py-2 rounded-xl bg-slate-900/90 border border-slate-700/80 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition">
-              <svg class="w-4 h-4 text-slate-500 absolute left-3 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-              </svg>
+              <h2 class="text-xl font-bold text-white">System Telemetry & Event Log</h2>
+              <p class="text-xs text-slate-400">In-memory circular event buffer (max 20 entries) with sub-second timestamps</p>
             </div>
           </div>
-
-          <!-- Category Filter Pills -->
-          <div class="flex items-center gap-2 flex-wrap text-xs">
-            <button onclick="setCategoryFilter('ALL')" id="filter-btn-ALL" class="px-3 py-1.5 rounded-xl font-semibold bg-emerald-500 text-slate-950 shadow-sm transition">All Codes (12)</button>
-            <button onclick="setCategoryFilter('ANPR')" id="filter-btn-ANPR" class="px-3 py-1.5 rounded-xl font-medium bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition">ANPR Engine</button>
-            <button onclick="setCategoryFilter('SAFETY')" id="filter-btn-SAFETY" class="px-3 py-1.5 rounded-xl font-medium bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition">Safety & Pre-screening</button>
-            <button onclick="setCategoryFilter('SCALE')" id="filter-btn-SCALE" class="px-3 py-1.5 rounded-xl font-medium bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition">Scale UART</button>
-            <button onclick="setCategoryFilter('CLOUD')" id="filter-btn-CLOUD" class="px-3 py-1.5 rounded-xl font-medium bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition">Cloud & Network</button>
-          </div>
-
-          <!-- Error Cards Catalog -->
-          <div id="error-catalog" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Dynamically populated with live occurrences -->
-          </div>
-
+          <button onclick="fetchStatus(true)" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300">
+            Refresh Stream
+          </button>
         </div>
 
+        <div id="events-log" class="custom-scrollbar p-4 rounded-2xl bg-slate-950 border border-slate-900 font-mono text-xs text-slate-300 space-y-2 min-h-[300px] max-h-[500px] overflow-y-auto leading-relaxed">
+          <div class="text-slate-600">[System] Initializing live telemetry stream...</div>
+        </div>
       </div>
-
     </div>
 
     <!-- Footer -->
@@ -388,10 +546,9 @@
   </div>
 
   <script>
-    const ERROR_CODES_DB = [
+    const ANPR_ERROR_CODES_DB = [
       {
         code: "NO_PLATE_DETECTED",
-        category: "ANPR",
         categoryName: "ANPR Engine",
         badgeClass: "badge-warning",
         cause: "Vehicle recognized on weighbridge, but license plate characters are obscured, dirty, or unreadable.",
@@ -400,7 +557,6 @@
       },
       {
         code: "REJECTED_HUMAN_DETECTED",
-        category: "SAFETY",
         categoryName: "Safety Guard",
         badgeClass: "badge-danger",
         cause: "YOLO pre-screening detected human presence in the capture zone near the vehicle.",
@@ -409,7 +565,6 @@
       },
       {
         code: "REJECTED_NO_FOUR_WHEELER",
-        category: "SAFETY",
         categoryName: "Pre-screening",
         badgeClass: "badge-warning",
         cause: "Scale weight active, but no 4-wheeler (truck/car/bus) was visually detected in Camera 1.",
@@ -418,7 +573,6 @@
       },
       {
         code: "REJECTED_MULTIPLE_VEHICLES",
-        category: "SAFETY",
         categoryName: "Pre-screening",
         badgeClass: "badge-warning",
         cause: "Multiple vehicles detected simultaneously in the Camera 1 capture frame.",
@@ -427,7 +581,6 @@
       },
       {
         code: "ANPR_TIMEOUT",
-        category: "ANPR",
         categoryName: "Inference Timeout",
         badgeClass: "badge-danger",
         cause: "Argus microservice took longer than 15.0s to compute YOLO + Docling OCR inference on Raspberry Pi.",
@@ -436,7 +589,6 @@
       },
       {
         code: "ANPR_CONNECTION_ERROR",
-        category: "ANPR",
         categoryName: "Microservice",
         badgeClass: "badge-danger",
         cause: "Hermes cannot connect to Argus FastAPI server on port 8000.",
@@ -444,44 +596,7 @@
         supabaseField: "vehicle_number = 'ANPR_CONNECTION_ERROR'"
       },
       {
-        code: "UART_PORT_ERROR",
-        category: "SCALE",
-        categoryName: "Scale Hardware",
-        badgeClass: "badge-danger",
-        cause: "Failed to open serial UART port (/dev/ttyAMA0).",
-        action: "Check RS-232/UART wiring on GPIO 14/15 and user dialout permissions.",
-        supabaseField: "Logged in Hermes telemetry"
-      },
-      {
-        code: "SCALE_TIMEOUT",
-        category: "SCALE",
-        categoryName: "Scale Protocol",
-        badgeClass: "badge-warning",
-        cause: "Scale serial buffer timeout (>300ms silence without complete weight frame).",
-        action: "Verify scale indicator continuous output mode and 1200 baud setting.",
-        supabaseField: "Logged in Hermes telemetry"
-      },
-      {
-        code: "SUPABASE_AUTH_FAILED",
-        category: "CLOUD",
-        categoryName: "Cloud Auth",
-        badgeClass: "badge-danger",
-        cause: "Invalid operator login credentials (sb_email / sb_pass) in config.json.",
-        action: "Update Supabase credentials in config.json or via operator portal.",
-        supabaseField: "Cloud sync paused"
-      },
-      {
-        code: "SUPABASE_UPLOAD_ERROR",
-        category: "CLOUD",
-        categoryName: "Cloud Network",
-        badgeClass: "badge-danger",
-        cause: "Network connection dropped or Supabase REST API unreachable during weighment POST.",
-        action: "Verify Wi-Fi/Ethernet connectivity and restore internet access.",
-        supabaseField: "Logged in Hermes telemetry"
-      },
-      {
         code: "CAMERA_RTSP_FAILED",
-        category: "ANPR",
         categoryName: "Camera Ingestion",
         badgeClass: "badge-danger",
         cause: "OpenCV unable to open RTSP stream from camera IP address.",
@@ -490,7 +605,6 @@
       },
       {
         code: "EMPTY_IMAGE",
-        category: "ANPR",
         categoryName: "Camera Frame",
         badgeClass: "badge-warning",
         cause: "Camera snapshot returned 0 bytes or corrupted payload.",
@@ -499,76 +613,55 @@
       }
     ];
 
-    let currentCategory = "ALL";
+    let activeTab = "overview";
     let liveErrorCounts = {};
 
-    function setCategoryFilter(category) {
-      currentCategory = category;
-      ["ALL", "ANPR", "SAFETY", "SCALE", "CLOUD"].forEach(cat => {
-        const btn = document.getElementById("filter-btn-" + cat);
-        if (!btn) return;
-        if (cat === category) {
-          btn.className = "px-3 py-1.5 rounded-xl font-semibold bg-emerald-500 text-slate-950 shadow-sm transition";
-        } else {
-          btn.className = "px-3 py-1.5 rounded-xl font-medium bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition";
+    function switchTab(tabId) {
+      activeTab = tabId;
+      window.location.hash = tabId;
+
+      const tabs = ["overview", "scale", "anpr", "cloud", "wifi", "telemetry"];
+      tabs.forEach(t => {
+        const view = document.getElementById("view-" + t);
+        const btn = document.getElementById("tab-btn-" + t);
+        if (view) view.classList.toggle("hidden", t !== tabId);
+        if (btn) {
+          if (t === tabId) {
+            btn.className = "flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs bg-emerald-500 text-slate-950 shadow-md transition whitespace-nowrap";
+          } else {
+            btn.className = "flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-xs text-slate-400 hover:text-white hover:bg-slate-800/60 transition whitespace-nowrap";
+          }
         }
       });
-      filterErrors();
     }
 
-    function renderErrorCatalog(items) {
-      const container = document.getElementById("error-catalog");
-      if (items.length === 0) {
-        container.innerHTML = `
-          <div class="col-span-2 text-center py-8 text-slate-500 text-xs">
-            No matching error codes found.
-          </div>
-        `;
-        return;
-      }
-
-      container.innerHTML = items.map(e => {
+    function renderAnprErrors() {
+      const container = document.getElementById("anpr-error-cards");
+      if (!container) return;
+      container.innerHTML = ANPR_ERROR_CODES_DB.map(e => {
         const count = liveErrorCounts[e.code] || 0;
-        const isLiveTriggered = count > 0;
-        const liveBorderClass = isLiveTriggered ? "border-rose-500/70 shadow-glow-rose bg-rose-950/20" : "";
-
+        const isLive = count > 0;
+        const borderClass = isLive ? "border-rose-500 shadow-glow-rose bg-rose-950/20" : "";
         return `
-          <div class="glass-panel-interactive p-4 rounded-2xl flex flex-col justify-between space-y-3 ${liveBorderClass}">
+          <div class="glass-panel-interactive p-4 rounded-2xl flex flex-col justify-between space-y-3 ${borderClass}">
             <div class="space-y-2">
               <div class="flex items-center justify-between gap-2">
                 <div class="flex items-center gap-1.5">
-                  <span class="font-mono font-bold text-white text-xs tracking-wide select-all">${e.code}</span>
-                  ${isLiveTriggered ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-500 text-white animate-pulse">LIVE (${count}x)</span>` : ''}
+                  <span class="font-mono font-bold text-white text-xs">${e.code}</span>
+                  ${isLive ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-500 text-white animate-pulse">LIVE (${count}x)</span>` : ''}
                 </div>
-                <span class="${e.badgeClass} px-2 py-0.5 rounded-md text-[10px] font-bold">${e.categoryName}</span>
+                <span class="${e.badgeClass} px-2 py-0.5 rounded text-[10px] font-bold">${e.categoryName}</span>
               </div>
               <p class="text-slate-400 text-[11px] leading-relaxed"><strong class="text-slate-300">Cause:</strong> ${e.cause}</p>
             </div>
-            <div class="space-y-2 pt-2 border-t border-slate-800/80">
-              <div class="p-2 rounded-xl bg-slate-950/80 border border-slate-800/90 text-[11px] text-emerald-400/95 font-medium leading-relaxed">
-                <strong class="text-emerald-300">Fix:</strong> ${e.action}
-              </div>
-              <div class="text-[10px] text-slate-500 font-mono flex items-center justify-between">
-                <span>Supabase payload:</span>
-                <span class="text-slate-400 truncate max-w-[180px]">${e.supabaseField}</span>
+            <div class="space-y-2 pt-2 border-t border-slate-800">
+              <div class="p-2 rounded-xl bg-slate-950 text-[11px] text-emerald-400 font-medium">
+                <strong>Fix:</strong> ${e.action}
               </div>
             </div>
           </div>
         `;
       }).join("");
-    }
-
-    function filterErrors() {
-      const query = document.getElementById("error-search").value.toLowerCase();
-      const filtered = ERROR_CODES_DB.filter(e => {
-        const matchesCat = (currentCategory === "ALL" || e.category === currentCategory);
-        const matchesQuery = e.code.toLowerCase().includes(query) ||
-                             e.categoryName.toLowerCase().includes(query) ||
-                             e.cause.toLowerCase().includes(query) ||
-                             e.action.toLowerCase().includes(query);
-        return matchesCat && matchesQuery;
-      });
-      renderErrorCatalog(filtered);
     }
 
     function togglePasswordVisibility() {
@@ -588,101 +681,86 @@
         // Update live error counts
         if (data.error_counts) {
           liveErrorCounts = data.error_counts;
-          filterErrors();
+          renderAnprErrors();
         }
 
-        // Live Latest Weighment Card
-        if (data.latest_weighment && data.latest_weighment.session_id) {
-          const lw = data.latest_weighment;
-          const plateDisp = document.getElementById("live-plate-display");
-          const recBox = document.getElementById("live-recommendation");
-          const pulseDot = document.getElementById("live-pulse-dot");
-          const pulseAnim = document.getElementById("live-pulse-anim");
-
-          plateDisp.textContent = lw.plate || "READY";
-          document.getElementById("live-confirmed-weight").textContent = (lw.weight || 0).toFixed(3) + " kg";
-          document.getElementById("live-session-id").textContent = lw.session_id;
-          document.getElementById("last-weigh-time").textContent = lw.timestamp ? "Captured at " + lw.timestamp : "Just now";
-
-          if (lw.is_error) {
-            plateDisp.className = "text-lg font-extrabold font-mono text-rose-400 mt-1 truncate";
-            pulseDot.className = "relative inline-flex rounded-full h-3 w-3 bg-rose-500";
-            pulseAnim.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75";
-            
-            // Find action from DB
-            const match = ERROR_CODES_DB.find(e => e.code === lw.plate);
-            recBox.classList.remove("hidden");
-            recBox.className = "p-3 rounded-xl bg-rose-950/80 border border-rose-700/80 text-rose-200 text-xs font-medium leading-relaxed block";
-            recBox.innerHTML = `<strong>⚠️ Status: ${lw.plate}</strong> — ${match ? match.action : 'Check weighbridge camera and scale alignment.'}`;
-          } else {
-            plateDisp.className = "text-lg font-extrabold font-mono text-emerald-400 mt-1 truncate";
-            pulseDot.className = "relative inline-flex rounded-full h-3 w-3 bg-emerald-500";
-            pulseAnim.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75";
-            recBox.classList.remove("hidden");
-            recBox.className = "p-3 rounded-xl bg-emerald-950/80 border border-emerald-700/80 text-emerald-200 text-xs font-medium leading-relaxed block";
-            recBox.innerHTML = `<strong>✅ Vehicle Verified:</strong> Successfully recognized vehicle license plate <strong>${lw.plate}</strong>.`;
-          }
-        }
-
-        // Update Wi-Fi input with current SSID if not yet typed
-        const ssidInput = document.getElementById("wifi-ssid");
-        if (data.config && data.config.wifi_ssid && !ssidInput.value) {
-          ssidInput.value = data.config.wifi_ssid;
-        }
-
-        // Live Scale Telemetry
+        // Scale data
         if (data.scale) {
           const w = (data.scale.current_weight || 0).toFixed(3);
-          document.getElementById("live-weight-val").innerHTML = `${w} <span class="text-base font-normal text-slate-400">kg</span>`;
+          document.getElementById("ov-weight").innerHTML = `${w} <span class="text-base font-normal text-slate-400">kg</span>`;
+          document.getElementById("scale-page-weight").innerHTML = `${w} <span class="text-2xl font-normal text-slate-500">kg</span>`;
           
-          const statePill = document.getElementById("scale-state-pill");
-          statePill.textContent = data.scale.state || "IDLE";
-          if (data.scale.state === "SCALE_STABLE_RECORDED" || data.scale.state === "SCALE_STABILIZING") {
-            statePill.className = "badge-success px-2 py-0.5 rounded-full text-[10px] font-bold";
-          } else {
-            statePill.className = "bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full text-[10px] font-bold";
-          }
-          document.getElementById("scale-port-val").textContent = `${data.scale.port} @ ${data.scale.baudrate} baud`;
+          const state = data.scale.state || "IDLE";
+          document.getElementById("ov-scale-state").textContent = state;
+          document.getElementById("scale-state-detail").textContent = "STATE: " + state;
         }
 
         if (data.config) {
-          document.getElementById("thresh-val").textContent = `${data.config.min_weight.toFixed(1)} kg`;
-          document.getElementById("center-id-val").textContent = data.config.center_id;
-          document.getElementById("operator-email-val").textContent = data.config.operator_email || "Not set in config.json";
+          document.getElementById("scale-thresh-disp").textContent = `${data.config.min_weight.toFixed(1)} kg`;
+          document.getElementById("ov-center-id").textContent = `Center ID: ${data.config.center_id}`;
+          document.getElementById("cloud-center-id-val").textContent = data.config.center_id;
+          document.getElementById("cloud-email-val").textContent = data.config.operator_email || "Not set";
+          document.getElementById("ov-wifi-ssid").textContent = data.config.wifi_ssid || "Setup Portal";
+
+          const ssidInput = document.getElementById("wifi-ssid");
+          if (ssidInput && !ssidInput.value && data.config.wifi_ssid) {
+            ssidInput.value = data.config.wifi_ssid;
+          }
         }
 
-        // Argus Microservice status
-        const argusBadge = document.getElementById("argus-badge");
+        // Argus data
+        const argusBadge = document.getElementById("ov-argus-badge");
+        const anprPill = document.getElementById("anpr-live-status-pill");
         if (data.argus && data.argus.online) {
           argusBadge.className = "badge-success px-2 py-0.5 rounded-full text-[10px] font-bold";
           argusBadge.textContent = "ONLINE (OK)";
+          if (anprPill) anprPill.textContent = "ARGUS ONLINE (OK)";
         } else {
           argusBadge.className = "badge-danger px-2 py-0.5 rounded-full text-[10px] font-bold";
           argusBadge.textContent = "OFFLINE";
-        }
-        if (data.argus && data.argus.url) {
-          document.getElementById("argus-url-val").textContent = data.argus.url;
+          if (anprPill) anprPill.textContent = "ARGUS OFFLINE";
         }
 
-        // Supabase status
-        const sbBadge = document.getElementById("supabase-badge");
+        // Supabase data
+        const sbBadge = document.getElementById("ov-sb-badge");
+        const cloudPill = document.getElementById("cloud-live-status-pill");
         if (data.supabase && data.supabase.authenticated) {
           sbBadge.className = "badge-success px-2 py-0.5 rounded-full text-[10px] font-bold";
           sbBadge.textContent = "AUTHENTICATED";
+          if (cloudPill) cloudPill.textContent = "AUTHENTICATED (OK)";
         } else {
           sbBadge.className = "badge-warning px-2 py-0.5 rounded-full text-[10px] font-bold";
           sbBadge.textContent = "STANDBY";
+          if (cloudPill) cloudPill.textContent = "STANDBY";
         }
 
-        // Wi-Fi / Hotspot badge
+        // Wi-Fi / Hotspot data
         const hsBadge = document.getElementById("hotspot-badge");
         const ipDisplay = document.getElementById("network-ip-display");
+        const wifiBadge = document.getElementById("ov-wifi-badge");
+        const wifiPill = document.getElementById("wifi-live-status-pill");
+
         if (data.wifi && data.wifi.hotspot_active) {
           hsBadge.classList.remove("hidden");
           ipDisplay.textContent = "Hotspot: 10.42.0.1";
+          wifiBadge.className = "badge-warning px-2 py-0.5 rounded-full text-[10px] font-bold";
+          wifiBadge.textContent = "HOTSPOT ACTIVE";
+          if (wifiPill) wifiPill.textContent = "EMERGENCY HOTSPOT ACTIVE";
         } else {
           hsBadge.classList.add("hidden");
           ipDisplay.textContent = data.wifi && data.wifi.connected ? "Wi-Fi Connected" : "Local Network";
+          wifiBadge.className = "badge-success px-2 py-0.5 rounded-full text-[10px] font-bold";
+          wifiBadge.textContent = "CONNECTED";
+          if (wifiPill) wifiPill.textContent = "CONNECTED (OK)";
+        }
+
+        // Live Latest Weighment
+        if (data.latest_weighment && data.latest_weighment.session_id) {
+          const lw = data.latest_weighment;
+          document.getElementById("ov-plate").textContent = lw.plate || "READY";
+          document.getElementById("ov-confirmed-weight").textContent = (lw.weight || 0).toFixed(3) + " kg";
+          document.getElementById("ov-session-id").textContent = lw.session_id;
+          document.getElementById("ov-last-time").textContent = lw.timestamp ? "Captured at " + lw.timestamp : "Just now";
         }
 
         // Event logs
@@ -714,13 +792,7 @@
       const btn = document.getElementById("save-wifi-btn");
 
       btn.disabled = true;
-      btn.innerHTML = `
-        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        Connecting to ${ssid}...
-      `;
+      btn.innerHTML = `<span>Connecting to ${ssid}...</span>`;
 
       try {
         const res = await fetch("/api/wifi", {
@@ -732,7 +804,7 @@
 
         if (res.ok && resp.success) {
           alert.className = "p-3.5 rounded-xl bg-emerald-950/90 border border-emerald-700 text-emerald-200 block text-xs leading-relaxed";
-          alert.innerHTML = `<strong>✅ Success!</strong> ${resp.message}<br><span class="text-emerald-400">Pi is now connected to ${ssid}. You can now access Hermes from your normal Wi-Fi!</span>`;
+          alert.innerHTML = `<strong>✅ Success!</strong> ${resp.message}<br><span class="text-emerald-400">Pi is now connected to ${ssid}.</span>`;
         } else {
           alert.className = "p-3.5 rounded-xl bg-rose-950/90 border border-rose-700 text-rose-200 block text-xs leading-relaxed";
           alert.innerHTML = `<strong>⚠️ Warning:</strong> ${resp.message || resp.error || 'Connection failed'}`;
@@ -764,8 +836,15 @@
       }
     }
 
-    // Initialize catalog and status loop (polling every 1 second)
-    renderErrorCatalog(ERROR_CODES_DB);
+    // Auto-detect URL hash or route on load
+    const initialHash = window.location.hash.replace("#", "") || window.location.pathname.replace("/", "");
+    if (["scale", "anpr", "cloud", "wifi", "telemetry"].includes(initialHash)) {
+      switchTab(initialHash);
+    } else {
+      switchTab("overview");
+    }
+
+    renderAnprErrors();
     fetchStatus();
     setInterval(fetchStatus, 1000);
   </script>
