@@ -25,12 +25,14 @@ STABILITY_DURATION  = 10.0   # 10 seconds continuous stability required
 class ScaleStabilityMachine:
     def __init__(self):
         self.state = ScaleState.SCALE_IDLE
+        self.last_weight = 0.0
         self._current_stable_candidate = 0.0
         self._candidate_start_time = 0.0
         self._last_printed_weight = -9999.0
 
     def process_new_weight(self, parsed_weight: float):
         now = time.time()
+        self.last_weight = parsed_weight
 
         # Log weight if it changed significantly (≥0.1 kg)
         if abs(parsed_weight - self._last_printed_weight) >= 0.1:
@@ -105,6 +107,7 @@ class ScaleStabilityMachine:
     def reset(self):
         """Manually reset the state machine."""
         self.state = ScaleState.SCALE_IDLE
+        self.last_weight = 0.0
         self._current_stable_candidate = 0.0
         self._candidate_start_time = 0.0
         self._last_printed_weight = -9999.0
@@ -120,4 +123,8 @@ def process_new_weight(weight: float):
 # Expose current state
 def get_scale_state() -> ScaleState:
     return scale_state_machine.state
+
+def get_current_weight() -> float:
+    return scale_state_machine.last_weight
+
 

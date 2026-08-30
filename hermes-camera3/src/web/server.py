@@ -15,7 +15,7 @@ from ..config.camera_config import (
 )
 from ..config.config_manager import config
 from ..network.supabase_client import auth_state
-from ..scale.scale_stability import get_scale_state
+from ..scale.scale_stability import get_current_weight, get_scale_state
 from ..scale.scale_uart import SCALE_BAUD_RATE, SCALE_SERIAL_PORT
 
 logger = logging.getLogger(__name__)
@@ -26,6 +26,18 @@ INDEX_HTML_PATH = os.path.join(TEMPLATES_DIR, "index.html")
 # In-memory recent system events buffer for telemetry feed
 _system_events: list[dict[str, str]] = []
 _events_lock = threading.Lock()
+
+# Live weighment session status and active error tracking
+_latest_weighment: dict[str, Any] = {
+    "session_id": None,
+    "plate": None,
+    "weight": 0.0,
+    "timestamp": None,
+    "is_error": False,
+    "status_code": "READY",
+}
+_error_counts: dict[str, int] = {}
+_live_lock = threading.Lock()
 
 
 def record_system_event(source: str, message: str):
@@ -38,6 +50,30 @@ def record_system_event(source: str, message: str):
             "source": source,
             "message": message,
         })
+
+
+def record_weighment_result(session_id: str, plate: str, weight: float, is_error: bool = False, status_code: str = "SUCCESS"):
+    """Records the latest weighbridge session outcome and updates live error counters."""
+    with _live_lock:
+        _latest_weighment["session_id"] = session_id
+        _latest_weighment["plate"] = plate
+        _latest_weighment["weight"] = weight
+        _latest_weighment["timestamp"] = time.strftime("%H:%M:%S")
+        _latest_weighment["is_error"] = is_error
+        _latest_weighment["status_code"] = status_code
+
+        if is_error or status_code not in ("SUCCESS", "READY"):
+            _error_counts[status_code] = _error_counts.get(status_code, 0) + 1
+
+
+def get_latest_weighment() -> dict[str, Any]:
+    with _live_lock:
+        return dict(_latest_weighment)
+
+
+def get_error_counts() -> dict[str, int]:
+    with _live_lock:
+        return dict(_error_counts)
 
 
 class FallbackHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -111,7 +147,7 @@ class FallbackHTTPRequestHandler(BaseHTTPRequestHandler):
                 "port": SCALE_SERIAL_PORT,
                 "baudrate": SCALE_BAUD_RATE,
                 "state": get_scale_state().name,
-                "current_weight": 0.0,
+                "current_weight": round(get_current_weight(), 3),
             },
             "argus": {
                 "url": target_argus_url,
@@ -134,9 +170,12 @@ class FallbackHTTPRequestHandler(BaseHTTPRequestHandler):
                 "operator_email": config.supabase_email,
                 "min_weight": config.supabase_weight_threshold,
             },
+            "latest_weighment": get_latest_weighment(),
+            "error_counts": get_error_counts(),
             "events": events_copy,
         }
         self._send_json_response(status_data)
+
 
     def _handle_post_wifi(self):
         content_len = int(self.headers.get("Content-Length", 0))

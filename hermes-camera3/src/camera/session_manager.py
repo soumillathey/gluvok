@@ -182,9 +182,29 @@ class WeighbridgeSessionManager:
                 f"Plate='{final_anpr_plate}', Weight={self.stable_weight:.3f} kg, "
                 f"Cam1 Frames={total_frames}, Aux Cams={len(aux_copy)}"
             )
+
+            # Bridge to fallback web server live telemetry
+            try:
+                from ..web.server import record_system_event, record_weighment_result
+                is_err = bool(not self._cam1_plates)
+                record_weighment_result(
+                    session_id=str(self.session_id),
+                    plate=final_anpr_plate,
+                    weight=self.stable_weight,
+                    is_error=is_err,
+                    status_code=final_anpr_plate if is_err else "SUCCESS",
+                )
+                record_system_event(
+                    "WEIGHMENT",
+                    f"Session {self.session_id}: {self.stable_weight:.3f} kg -> Plate: '{final_anpr_plate}'",
+                )
+            except (ImportError, AttributeError, ValueError) as e:
+                logger.debug(f"[Session] Error recording live telemetry: {e}")
+
             return package
 
     def reset_session(self):
+
         """Resets session manager state when weight returns to zero (scale idle)."""
         with self._lock:
             if self.phase == SessionPhase.PHASE_IDLE:
