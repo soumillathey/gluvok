@@ -68,7 +68,9 @@ class ScaleUARTReader:
                     self._check_timeout_flush()
                 else:
                     time.sleep(0.1)
-            except (serial.SerialException, OSError) as e:
+            except (serial.SerialException, OSError, TypeError) as e:
+                if not self._running:
+                    break
                 logger.error(f"[Scale] UART read error: {e}")
                 time.sleep(0.5)
 
