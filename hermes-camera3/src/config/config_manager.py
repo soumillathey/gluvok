@@ -95,6 +95,20 @@ class ConfigManager:
             self.supabase_password
         )
 
+    def update_wifi_credentials(self, ssid: str, password: str):
+        self.wifi_ssid = ssid
+        self.wifi_password = password
+        self.save_settings(
+            ssid=self.wifi_ssid,
+            password=self.wifi_password,
+            center_id=self.supabase_center_id,
+            min_weight=self.supabase_weight_threshold,
+            sb_email=self.supabase_email,
+            sb_password=self.supabase_password,
+            anpr_url=self.anpr_server_url,
+        )
+        logger.info(f"[Config] Wi-Fi credentials updated for SSID: '{self.wifi_ssid}'.")
+
     def clear_wifi_credentials(self):
         self.wifi_ssid = ""
         self.wifi_password = ""
@@ -104,9 +118,11 @@ class ConfigManager:
             center_id=self.supabase_center_id,
             min_weight=self.supabase_weight_threshold,
             sb_email=self.supabase_email,
-            sb_password=self.supabase_password
+            sb_password=self.supabase_password,
+            anpr_url=self.anpr_server_url,
         )
         logger.info("[Config] Wi-Fi credentials cleared.")
 
 # Shared singleton instance matching ESP32 global settings
 config = ConfigManager()
+

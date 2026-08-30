@@ -28,13 +28,16 @@ logger = logging.getLogger(__name__)
 from src.config.config_manager import config
 from src.network.supabase_auth import login_to_supabase
 from src.scale.scale_uart import get_uart_reader
+from src.web.server import start_web_server, stop_web_server
 
 
 # ── Graceful shutdown ─────────────────────────────────────────────────────────
 def shutdown(signum, frame):
     logger.info("\n[Main] Shutdown signal received. Cleaning up...")
     get_uart_reader().stop()
+    stop_web_server()
     sys.exit(0)
+
 
 signal.signal(signal.SIGINT,  shutdown)
 signal.signal(signal.SIGTERM, shutdown)
@@ -51,6 +54,9 @@ def setup():
     # Start UART scale reader thread
     get_uart_reader().start()
 
+    # Start fallback diagnostics and Wi-Fi configuration web server
+    start_web_server(port=8080)
+
     # Log active settings from config.json
     logger.info(
         f"[Config] Email: '{config.supabase_email}' | "
@@ -63,6 +69,7 @@ def setup():
         login_to_supabase()
     else:
         logger.info("[Auth] Supabase credentials not set in config.json.")
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  LOOP
