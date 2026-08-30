@@ -103,6 +103,8 @@ class FallbackHTTPRequestHandler(BaseHTTPRequestHandler):
         with _events_lock:
             events_copy = list(_system_events)
 
+        from ..network.wifi_manager import is_hotspot_active, is_wifi_connected
+
         status_data = {
             "status": "healthy",
             "scale": {
@@ -122,6 +124,10 @@ class FallbackHTTPRequestHandler(BaseHTTPRequestHandler):
             "cameras": {
                 "cam1_url": ANPR_CAMERA_URL,
                 "auxiliary_urls": AUXILIARY_CAMERA_URLS,
+            },
+            "wifi": {
+                "connected": is_wifi_connected(),
+                "hotspot_active": is_hotspot_active(),
             },
             "config": {
                 "wifi_ssid": config.wifi_ssid,
@@ -146,12 +152,23 @@ class FallbackHTTPRequestHandler(BaseHTTPRequestHandler):
                 return
 
             config.update_wifi_credentials(ssid, password)
-            record_system_event("CONFIG", f"Wi-Fi credentials updated for SSID: '{ssid}'")
+            record_system_event("CONFIG", f"Saved Wi-Fi SSID '{ssid}' to config.json. Attempting connection...")
 
-            self._send_json_response({
-                "success": True,
-                "message": f"Wi-Fi SSID '{ssid}' successfully saved to config.json.",
-            })
+            from ..network.wifi_manager import connect_to_wifi
+            connected, msg = connect_to_wifi(ssid, password)
+
+            if connected:
+                record_system_event("WIFI", f"Successfully connected to '{ssid}'.")
+                self._send_json_response({
+                    "success": True,
+                    "message": f"Saved and successfully connected to Wi-Fi '{ssid}'.",
+                })
+            else:
+                record_system_event("WIFI", f"Failed connecting to '{ssid}': {msg}")
+                self._send_json_response({
+                    "success": False,
+                    "message": f"Saved to config, but connection failed: {msg}",
+                }, 400)
         except (json.JSONDecodeError, UnicodeDecodeError) as e:
             self._send_json_response({"success": False, "error": f"Invalid JSON payload: {e}"}, 400)
 

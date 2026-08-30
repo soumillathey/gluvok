@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 # ── Import core modules ───────────────────────────────────────────────────────
 from src.config.config_manager import config
 from src.network.supabase_auth import login_to_supabase
+from src.network.wifi_manager import start_wifi_watchdog, stop_wifi_watchdog
 from src.scale.scale_uart import get_uart_reader
 from src.web.server import start_web_server, stop_web_server
 
@@ -36,6 +37,7 @@ def shutdown(signum, frame):
     logger.info("\n[Main] Shutdown signal received. Cleaning up...")
     get_uart_reader().stop()
     stop_web_server()
+    stop_wifi_watchdog()
     sys.exit(0)
 
 
@@ -56,6 +58,10 @@ def setup():
 
     # Start fallback diagnostics and Wi-Fi configuration web server
     start_web_server(port=8080)
+
+    # Start automatic Wi-Fi watchdog & emergency hotspot monitor
+    start_wifi_watchdog(interval=30.0)
+
 
     # Log active settings from config.json
     logger.info(
