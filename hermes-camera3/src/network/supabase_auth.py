@@ -1,7 +1,9 @@
-import requests
 import logging
-from .supabase_client import SUPABASE_BASE_URL, SUPABASE_ANON_KEY, auth_state
+
+import requests
+
 from ..config.config_manager import config
+from .supabase_client import SUPABASE_ANON_KEY, SUPABASE_BASE_URL, auth_state
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +36,7 @@ def login_to_supabase() -> bool:
                 fetch_profile_id()
                 return True
         logger.error(f"[Auth] Login failed with status code: {response.status_code}, response: {response.text}")
-    except Exception as e:
+    except (requests.RequestException, ValueError, KeyError) as e:
         logger.error(f"[Auth] HTTP login exception: {e}")
 
     return False
@@ -56,7 +58,7 @@ def _query_table_for_profile_id(table_name: str) -> bool:
                 config.update_profile_id(profile_id)
                 logger.info(f"[Profile] Resolved Operator Profile ID from table '{table_name}': {profile_id}")
                 return True
-    except Exception as e:
+    except (requests.RequestException, ValueError, KeyError) as e:
         logger.error(f"[Profile] Exception querying table '{table_name}': {e}")
 
     return False

@@ -1,8 +1,12 @@
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 import requests
 
-from src.camera.anpr_client import send_frame_to_anpr_server, get_highest_frequency_plate
+from src.camera.anpr_client import (
+    get_highest_frequency_plate,
+    send_frame_to_anpr_server,
+)
 
 
 class TestANPRClient(unittest.TestCase):

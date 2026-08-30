@@ -4,16 +4,22 @@ Manages weighbridge session lifecycle, Camera 1 ANPR capture loop thread,
 auxiliary camera snapshots, 10-second post-stabilization timing, and data packaging.
 """
 
+import logging
+import threading
 import time
 import uuid
-import threading
-import logging
-from typing import Optional, Dict, List, Any
 from enum import Enum
+from typing import Any
 
-from .camera_manager import fetch_image_bytes, capture_auxiliary_snapshots
-from .anpr_client import send_frame_to_anpr_server, get_highest_frequency_plate
-from ..config.camera_config import ANPR_CAMERA_URL, ANPR_CAPTURE_INTERVAL, POST_STABILITY_DURATION
+import requests
+
+from ..config.camera_config import (
+    ANPR_CAMERA_URL,
+    ANPR_CAPTURE_INTERVAL,
+    POST_STABILITY_DURATION,
+)
+from .anpr_client import get_highest_frequency_plate, send_frame_to_anpr_server
+from .camera_manager import capture_auxiliary_snapshots, fetch_image_bytes
 
 logger = logging.getLogger(__name__)
 
@@ -28,14 +34,14 @@ class SessionPhase(Enum):
 class WeighbridgeSessionManager:
     def __init__(self):
         self.phase = SessionPhase.PHASE_IDLE
-        self.session_id: Optional[str] = None
+        self.session_id: str | None = None
         self.stable_weight: float = 0.0
 
-        self._cam1_frames: List[bytes] = []
-        self._cam1_plates: List[str] = []
-        self._auxiliary_images: Dict[int, Optional[bytes]] = {}
+        self._cam1_frames: list[bytes] = []
+        self._cam1_plates: list[str] = []
+        self._auxiliary_images: dict[int, bytes | None] = {}
 
-        self._anpr_thread: Optional[threading.Thread] = None
+        self._anpr_thread: threading.Thread | None = None
         self._stop_anpr_event = threading.Event()
 
         self._post_stability_start_time: float = 0.0
@@ -75,13 +81,16 @@ class WeighbridgeSessionManager:
                 img_bytes = fetch_image_bytes(ANPR_CAMERA_URL)
                 if img_bytes:
                     with self._lock:
+                        # Keep only recent frames in RAM to prevent memory bloat
+                        if len(self._cam1_frames) >= 5:
+                            self._cam1_frames.pop(0)
                         self._cam1_frames.append(img_bytes)
 
                     plate = send_frame_to_anpr_server(img_bytes)
                     if plate:
                         with self._lock:
                             self._cam1_plates.append(plate)
-            except Exception as e:
+            except (requests.RequestException, OSError, ValueError, RuntimeError) as e:
                 logger.error(f"[Session {self.session_id}] Exception in ANPR loop iteration: {e}")
 
             # Sleep remaining time to maintain 2.0s interval
@@ -110,7 +119,7 @@ class WeighbridgeSessionManager:
         with self._lock:
             self._auxiliary_images = aux_images
 
-    def check_session_progress(self) -> Optional[Dict[str, Any]]:
+    def check_session_progress(self) -> dict[str, Any] | None:
         """
         Periodically called in loop. Checks if 10-second post-stabilization timer expired.
         If expired, finalizes session, stops ANPR loop, and returns full session package.
@@ -134,7 +143,7 @@ class WeighbridgeSessionManager:
         final_package = self._finalize_session_package()
         return final_package
 
-    def _finalize_session_package(self) -> Dict[str, Any]:
+    def _finalize_session_package(self) -> dict[str, Any]:
         """Assembles final session dictionary data."""
         with self._lock:
             final_anpr_plate = get_highest_frequency_plate(self._cam1_plates)

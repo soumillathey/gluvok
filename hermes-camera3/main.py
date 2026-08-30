@@ -10,10 +10,10 @@ Module map:
   src/camera/    — Multi-camera snapshots, ANPR client, session lifecycle
 """
 
-import time
-import signal
 import logging
+import signal
 import sys
+import time
 
 # ── Logging setup ─────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 from src.config.config_manager import config
 from src.network.supabase_auth import login_to_supabase
 from src.scale.scale_uart import get_uart_reader
+
 
 # ── Graceful shutdown ─────────────────────────────────────────────────────────
 def shutdown(signum, frame):

@@ -1,6 +1,6 @@
-import os
 import json
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ class ConfigManager:
             logger.info(f" -> Min Weight Threshold: {self.supabase_weight_threshold:.1f}")
             if self.anpr_server_url:
                 logger.info(f" -> ANPR Server URL Override: {self.anpr_server_url}")
-        except Exception as e:
+        except (OSError, json.JSONDecodeError, ValueError) as e:
             logger.error(f"[Config] Error loading settings: {e}")
 
     def save_settings(self, ssid, password, center_id, min_weight, sb_email, sb_password, anpr_url=None):
@@ -77,12 +77,11 @@ class ConfigManager:
             "anpr_server_url": self.anpr_server_url
         }
 
-
         try:
             with open(self.file_path, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2)
             logger.info("[Config] New configurations written to persistent JSON storage.")
-        except Exception as e:
+        except (OSError, TypeError, ValueError) as e:
             logger.error(f"[Config] Failed to save settings: {e}")
 
     def update_profile_id(self, profile_id):

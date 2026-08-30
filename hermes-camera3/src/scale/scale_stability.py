@@ -5,11 +5,12 @@ Integrates with WeighbridgeSessionManager for camera captures and ANPR processin
 One transmission per session; resets only when weight returns to zero.
 """
 
-import time
 import logging
+import time
 from enum import Enum
-from ..config.config_manager import config
+
 from ..camera.session_manager import session_manager
+from ..config.config_manager import config
 
 logger = logging.getLogger(__name__)
 

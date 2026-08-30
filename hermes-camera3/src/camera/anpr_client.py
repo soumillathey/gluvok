@@ -1,25 +1,21 @@
-"""
-anpr_client.py
-ANPR Server communication client and plate voting algorithm.
-Sends captured Camera 1 frames to the ANPR server and calculates the highest frequency plate.
-"""
-
+import json
 import logging
-import requests
-from typing import Optional, List
 from collections import Counter
+from collections.abc import Sequence
 
-from ..config.camera_config import ANPR_SERVER_URL, ANPR_SERVER_TIMEOUT
+import requests
+
+from ..config.camera_config import ANPR_SERVER_TIMEOUT, ANPR_SERVER_URL
 from ..config.config_manager import config
 
 logger = logging.getLogger(__name__)
 
 
 def send_frame_to_anpr_server(
-    image_bytes: bytes,
-    server_url: Optional[str] = None,
+    image_bytes: bytes | None,
+    server_url: str | None = None,
     timeout: float = ANPR_SERVER_TIMEOUT,
-) -> Optional[str]:
+) -> str | None:
     """
     Sends raw JPEG image bytes to the Argus ANPR FastAPI microservice (/recognize).
     Returns the detected plate text string or None if unreadable/rejected/error.
@@ -73,7 +69,7 @@ def send_frame_to_anpr_server(
                 elif isinstance(data, str) and data.strip():
                     return data.strip().upper()
 
-            except Exception as parse_err:
+            except (ValueError, KeyError, json.JSONDecodeError, TypeError) as parse_err:
                 # If plain text response
                 text = response.text.strip().upper()
                 if text and text != "N/A":
@@ -89,12 +85,12 @@ def send_frame_to_anpr_server(
     except requests.exceptions.ConnectionError:
         logger.warning(f"[ANPR] Failed to connect to ANPR server at {target_url}. Is Argus running?")
         return None
-    except Exception as e:
+    except requests.RequestException as e:
         logger.error(f"[ANPR] Exception submitting frame to ANPR server ({target_url}): {e}")
         return None
 
 
-def get_highest_frequency_plate(plate_list: List[str]) -> str:
+def get_highest_frequency_plate(plate_list: Sequence[str | None]) -> str:
     """
     Analyzes a list of plate reading strings collected during a session and returns
     the string with the highest frequency.
@@ -115,3 +111,4 @@ def get_highest_frequency_plate(plate_list: List[str]) -> str:
         f"(Frequency: {count}/{total_samples}, All candidates: {dict(counter)})"
     )
     return most_common_plate
+

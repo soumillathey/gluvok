@@ -1,20 +1,21 @@
 import base64
-import requests
 import logging
-from typing import Union, Dict, Any
-from .supabase_client import SUPABASE_BASE_URL, SUPABASE_ANON_KEY, auth_state
-from .supabase_auth import login_to_supabase
+from typing import Any
+
+import requests
+
 from ..config.config_manager import config
+from .supabase_auth import login_to_supabase
+from .supabase_client import SUPABASE_ANON_KEY, SUPABASE_BASE_URL, auth_state
 
 logger = logging.getLogger(__name__)
 
 SUPABASE_TABLE = "weighments"
 
-def post_to_supabase(session_payload: Union[float, Dict[str, Any]], is_retry: bool = False):
-    if not auth_state.auth_token:
-        if not login_to_supabase():
-            logger.warning("[Supabase] POST aborted: Login failed.")
-            return
+def post_to_supabase(session_payload: float | dict[str, Any], is_retry: bool = False):
+    if not auth_state.auth_token and not login_to_supabase():
+        logger.warning("[Supabase] POST aborted: Login failed.")
+        return
 
     full_url = f"{SUPABASE_BASE_URL}/rest/v1/{SUPABASE_TABLE}"
     logger.info(f"[Supabase] Starting POST to: {full_url}")
@@ -24,7 +25,7 @@ def post_to_supabase(session_payload: Union[float, Dict[str, Any]], is_retry: bo
         vehicle_number = session_payload.get("anpr_plate", "UNKNOWN_PLATE")
         session_id = session_payload.get("session_id", "")
 
-        # Base64 encode images for JSON payload
+        # Base64 encode images in RAM for JSON payload
         cam1_bytes = session_payload.get("cam1_final_image")
         cam1_b64 = base64.b64encode(cam1_bytes).decode("utf-8") if cam1_bytes else None
 
@@ -81,6 +82,12 @@ def post_to_supabase(session_payload: Union[float, Dict[str, Any]], is_retry: bo
                 post_to_supabase(session_payload, is_retry=True)
         else:
             logger.error(f"[Supabase] POST error {response.status_code}: {response.text}")
-    except Exception as e:
+    except (requests.RequestException, ValueError, KeyError) as e:
         logger.error(f"[Supabase] HTTP POST exception: {e}")
+    finally:
+        # Explicitly release image byte buffers and base64 payloads from RAM
+        if isinstance(session_payload, dict):
+            session_payload.clear()
+        payload.clear()
+
 

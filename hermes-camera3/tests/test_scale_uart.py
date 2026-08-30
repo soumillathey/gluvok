@@ -1,7 +1,9 @@
-import unittest
 import time
+import unittest
 from unittest.mock import patch
+
 from src.scale.scale_uart import ScaleUARTReader
+
 
 class TestScaleUARTReader(unittest.TestCase):
     def setUp(self):

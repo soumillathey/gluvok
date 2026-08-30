@@ -5,23 +5,22 @@ Supports HTTP JPEG Snapshots and on-demand OpenCV RTSP stream frame grabbing.
 Uses ThreadPoolExecutor for concurrent multi-camera snapshot capture.
 """
 
-import time
 import logging
-import requests
-from typing import Optional, Dict, List
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+import requests
+
 from ..config.camera_config import (
+    AUXILIARY_CAMERA_URLS,
     CAMERA_TIMEOUT,
     MAX_PARALLEL_CAMERA_WORKERS,
-    AUXILIARY_CAMERA_URLS,
-    ANPR_CAMERA_URL,
 )
 
 logger = logging.getLogger(__name__)
 
 
-def fetch_image_bytes(camera_url: str, timeout: float = CAMERA_TIMEOUT) -> Optional[bytes]:
+def fetch_image_bytes(camera_url: str, timeout: float = CAMERA_TIMEOUT) -> bytes | None:
     """
     Fetch raw JPEG image bytes from a camera URL.
     Prefers HTTP JPEG Snapshots for low CPU/RAM footprint.
@@ -36,7 +35,7 @@ def fetch_image_bytes(camera_url: str, timeout: float = CAMERA_TIMEOUT) -> Optio
         return _fetch_http_snapshot(camera_url, timeout)
 
 
-def _fetch_http_snapshot(url: str, timeout: float) -> Optional[bytes]:
+def _fetch_http_snapshot(url: str, timeout: float) -> bytes | None:
     """Fetch HTTP JPEG snapshot with low memory footprint."""
     try:
         # verify=False handles cameras with self-signed SSL certificates
@@ -46,12 +45,12 @@ def _fetch_http_snapshot(url: str, timeout: float) -> Optional[bytes]:
         else:
             logger.warning(f"[Camera] HTTP fetch failed for {url}: Status {response.status_code}")
             return None
-    except Exception as e:
+    except requests.RequestException as e:
         logger.error(f"[Camera] Exception fetching snapshot from {url}: {e}")
         return None
 
 
-def _fetch_rtsp_frame(rtsp_url: str, timeout: float) -> Optional[bytes]:
+def _fetch_rtsp_frame(rtsp_url: str, timeout: float) -> bytes | None:
     """On-demand single frame capture from RTSP stream using OpenCV."""
     try:
         import cv2
@@ -66,26 +65,26 @@ def _fetch_rtsp_frame(rtsp_url: str, timeout: float) -> Optional[bytes]:
         cap.release()
 
         if ret and frame is not None:
-            # Encode frame to JPEG byte buffer
+            # Encode frame to JPEG byte buffer in RAM
             success, buffer = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
             if success:
                 return buffer.tobytes()
         logger.warning(f"[Camera] Failed to read frame from RTSP stream: {rtsp_url}")
         return None
-    except Exception as e:
+    except (cv2.error, OSError, ValueError, ImportError) as e:
         logger.error(f"[Camera] OpenCV RTSP exception for {rtsp_url}: {e}")
         return None
 
 
 def capture_auxiliary_snapshots(
-    camera_urls: Optional[List[str]] = None,
-) -> Dict[int, Optional[bytes]]:
+    camera_urls: list[str] | None = None,
+) -> dict[int, bytes | None]:
     """
     Concurrently captures snapshot images from all auxiliary cameras (Cameras 2 ... N).
     Returns a dict mapping camera_index (2, 3, ...) to raw image bytes or None.
     """
     urls = camera_urls if camera_urls is not None else AUXILIARY_CAMERA_URLS
-    results: Dict[int, Optional[bytes]] = {}
+    results: dict[int, bytes | None] = {}
 
     if not urls:
         logger.info("[Camera] No auxiliary cameras configured. Skipping parallel capture.")
@@ -109,7 +108,7 @@ def capture_auxiliary_snapshots(
                 results[cam_idx] = img_bytes
                 status = "SUCCESS" if img_bytes else "FAILED"
                 logger.info(f"[Camera] Camera {cam_idx} snapshot capture: {status}")
-            except Exception as exc:
+            except (requests.RequestException, OSError, ValueError, RuntimeError) as exc:
                 logger.error(f"[Camera] Camera {cam_idx} snapshot generated exception: {exc}")
                 results[cam_idx] = None
 

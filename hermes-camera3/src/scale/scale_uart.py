@@ -6,10 +6,11 @@ inter-packet timeout flush (300ms), and flexible numeric extraction.
 Maps to: ESP32 src/scale/scale_uart.cpp
 """
 
-import time
+import logging
 import re
 import threading
-import logging
+import time
+
 import serial
 
 logger = logging.getLogger(__name__)
@@ -36,7 +37,7 @@ class ScaleUARTReader:
         try:
             self._serial = serial.Serial(port, baudrate, timeout=SCALE_TIMEOUT)
             logger.info(f"[Scale] UART opened: {port} @ {baudrate} baud")
-        except Exception as e:
+        except (serial.SerialException, OSError) as e:
             logger.error(f"[Scale] Failed to open UART port '{port}': {e}")
             return
 
@@ -50,8 +51,8 @@ class ScaleUARTReader:
         if self._serial and self._serial.is_open:
             try:
                 self._serial.close()
-            except Exception:
-                pass
+            except (serial.SerialException, OSError) as e:
+                logger.debug(f"[Scale] Error closing serial port: {e}")
         logger.info("[Scale] UART reader stopped.")
 
     def _read_loop(self):
@@ -67,7 +68,7 @@ class ScaleUARTReader:
                     self._check_timeout_flush()
                 else:
                     time.sleep(0.1)
-            except Exception as e:
+            except (serial.SerialException, OSError) as e:
                 logger.error(f"[Scale] UART read error: {e}")
                 time.sleep(0.5)
 
