@@ -11,11 +11,13 @@ from src.camera.anpr_client import (
 
 class TestANPRClient(unittest.TestCase):
     def test_send_frame_empty_bytes(self):
-        result = send_frame_to_anpr_server(b"")
-        self.assertIsNone(result)
+        plate, status = send_frame_to_anpr_server(b"")
+        self.assertIsNone(plate)
+        self.assertEqual(status, "EMPTY_IMAGE")
 
-        result_none = send_frame_to_anpr_server(None)
-        self.assertIsNone(result_none)
+        plate_none, status_none = send_frame_to_anpr_server(None)
+        self.assertIsNone(plate_none)
+        self.assertEqual(status_none, "EMPTY_IMAGE")
 
     @patch("src.camera.anpr_client.requests.post")
     def test_send_frame_argus_success(self, mock_post):
@@ -43,9 +45,10 @@ class TestANPRClient(unittest.TestCase):
         mock_post.return_value = mock_response
 
         fake_img = b"\xff\xd8\xff\xe0\x00\x10JFIF"
-        result = send_frame_to_anpr_server(fake_img, server_url="http://127.0.0.1:8000/recognize")
+        plate, status = send_frame_to_anpr_server(fake_img, server_url="http://127.0.0.1:8000/recognize")
 
-        self.assertEqual(result, "RJ09GA0165")
+        self.assertEqual(plate, "RJ09GA0165")
+        self.assertEqual(status, "SUCCESS")
         mock_post.assert_called_once()
         args, kwargs = mock_post.call_args
         self.assertEqual(args[0], "http://127.0.0.1:8000/recognize")
@@ -70,8 +73,9 @@ class TestANPRClient(unittest.TestCase):
         }
         mock_post.return_value = mock_response
 
-        result = send_frame_to_anpr_server(b"fake-bytes")
-        self.assertIsNone(result)
+        plate, status = send_frame_to_anpr_server(b"fake-bytes")
+        self.assertIsNone(plate)
+        self.assertEqual(status, "REJECTED_HUMAN_DETECTED")
 
     @patch("src.camera.anpr_client.requests.post")
     def test_send_frame_argus_no_plate(self, mock_post):
@@ -92,8 +96,9 @@ class TestANPRClient(unittest.TestCase):
         }
         mock_post.return_value = mock_response
 
-        result = send_frame_to_anpr_server(b"fake-bytes")
-        self.assertIsNone(result)
+        plate, status = send_frame_to_anpr_server(b"fake-bytes")
+        self.assertIsNone(plate)
+        self.assertEqual(status, "NO_PLATE_DETECTED")
 
     @patch("src.camera.anpr_client.requests.post")
     def test_send_frame_fallback_flat_json(self, mock_post):
@@ -105,20 +110,23 @@ class TestANPRClient(unittest.TestCase):
         }
         mock_post.return_value = mock_response
 
-        result = send_frame_to_anpr_server(b"fake-bytes")
-        self.assertEqual(result, "MH12AB1234")
+        plate, status = send_frame_to_anpr_server(b"fake-bytes")
+        self.assertEqual(plate, "MH12AB1234")
+        self.assertEqual(status, "SUCCESS")
 
     @patch("src.camera.anpr_client.requests.post")
     def test_send_frame_timeout(self, mock_post):
         mock_post.side_effect = requests.exceptions.Timeout("Read timeout")
-        result = send_frame_to_anpr_server(b"fake-bytes")
-        self.assertIsNone(result)
+        plate, status = send_frame_to_anpr_server(b"fake-bytes")
+        self.assertIsNone(plate)
+        self.assertEqual(status, "ANPR_TIMEOUT")
 
     @patch("src.camera.anpr_client.requests.post")
     def test_send_frame_connection_error(self, mock_post):
         mock_post.side_effect = requests.exceptions.ConnectionError("Connection refused")
-        result = send_frame_to_anpr_server(b"fake-bytes")
-        self.assertIsNone(result)
+        plate, status = send_frame_to_anpr_server(b"fake-bytes")
+        self.assertIsNone(plate)
+        self.assertEqual(status, "ANPR_CONNECTION_ERROR")
 
     def test_highest_frequency_voting(self):
         samples = ["MH12AB1234", "MH12AB1234", "MH12AB1234", "MH12AB1235", "DL01AB9999"]

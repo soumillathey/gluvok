@@ -39,6 +39,7 @@ class WeighbridgeSessionManager:
 
         self._cam1_frames: list[bytes] = []
         self._cam1_plates: list[str] = []
+        self._cam1_statuses: list[str] = []
         self._auxiliary_images: dict[int, bytes | None] = {}
 
         self._anpr_thread: threading.Thread | None = None
@@ -58,6 +59,7 @@ class WeighbridgeSessionManager:
             self.stable_weight = 0.0
             self._cam1_frames.clear()
             self._cam1_plates.clear()
+            self._cam1_statuses.clear()
             self._auxiliary_images.clear()
             self._stop_anpr_event.clear()
 
@@ -86,10 +88,11 @@ class WeighbridgeSessionManager:
                             self._cam1_frames.pop(0)
                         self._cam1_frames.append(img_bytes)
 
-                    plate = send_frame_to_anpr_server(img_bytes)
-                    if plate:
-                        with self._lock:
+                    plate, status_code = send_frame_to_anpr_server(img_bytes)
+                    with self._lock:
+                        if plate:
                             self._cam1_plates.append(plate)
+                        self._cam1_statuses.append(status_code)
             except (requests.RequestException, OSError, ValueError, RuntimeError) as e:
                 logger.error(f"[Session {self.session_id}] Exception in ANPR loop iteration: {e}")
 
@@ -146,7 +149,14 @@ class WeighbridgeSessionManager:
     def _finalize_session_package(self) -> dict[str, Any]:
         """Assembles final session dictionary data."""
         with self._lock:
-            final_anpr_plate = get_highest_frequency_plate(self._cam1_plates)
+            if self._cam1_plates:
+                final_anpr_plate = get_highest_frequency_plate(self._cam1_plates)
+            elif self._cam1_statuses:
+                # Forward the exact Argus error/status code as the plate value to Supabase
+                final_anpr_plate = get_highest_frequency_plate(self._cam1_statuses)
+            else:
+                final_anpr_plate = "NO_PLATE_DETECTED"
+
             last_cam1_image = self._cam1_frames[-1] if self._cam1_frames else None
             aux_copy = dict(self._auxiliary_images)
             total_samples = len(self._cam1_plates)
@@ -187,8 +197,10 @@ class WeighbridgeSessionManager:
             self.stable_weight = 0.0
             self._cam1_frames.clear()
             self._cam1_plates.clear()
+            self._cam1_statuses.clear()
             self._auxiliary_images.clear()
 
 
 # Module-level singleton
 session_manager = WeighbridgeSessionManager()
+
