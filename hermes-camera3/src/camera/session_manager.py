@@ -148,22 +148,29 @@ class WeighbridgeSessionManager:
         with self._lock:
             final_anpr_plate = get_highest_frequency_plate(self._cam1_plates)
             last_cam1_image = self._cam1_frames[-1] if self._cam1_frames else None
+            aux_copy = dict(self._auxiliary_images)
+            total_samples = len(self._cam1_plates)
+            total_frames = len(self._cam1_frames)
 
             package = {
                 "session_id": self.session_id,
                 "weight": round(self.stable_weight, 3),
                 "anpr_plate": final_anpr_plate,
                 "cam1_final_image": last_cam1_image,
-                "auxiliary_images": self._auxiliary_images,
-                "total_anpr_samples": len(self._cam1_plates),
-                "total_cam1_frames": len(self._cam1_frames),
+                "auxiliary_images": aux_copy,
+                "total_anpr_samples": total_samples,
+                "total_cam1_frames": total_frames,
                 "timestamp": time.time(),
             }
+
+            # Immediately release intermediate frame buffers from RAM
+            self._cam1_frames.clear()
+            self._auxiliary_images.clear()
 
             logger.info(
                 f"[Session {self.session_id}] Package finalized: "
                 f"Plate='{final_anpr_plate}', Weight={self.stable_weight:.3f} kg, "
-                f"Cam1 Frames={len(self._cam1_frames)}, Aux Cams={len(self._auxiliary_images)}"
+                f"Cam1 Frames={total_frames}, Aux Cams={len(aux_copy)}"
             )
             return package
 
