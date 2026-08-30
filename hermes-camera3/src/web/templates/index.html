@@ -112,7 +112,7 @@
         <div>
           <div class="flex items-center gap-2.5 flex-wrap">
             <h1 class="text-2xl font-extrabold tracking-tight text-white">Gluvok Hermes</h1>
-            <span class="px-3 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Subsystem Suite</span>
+            <span class="px-3 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Hermes Controller</span>
             <span id="hotspot-badge" class="hidden px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">Hotspot Active</span>
           </div>
           <p class="text-xs sm:text-sm text-slate-400 mt-0.5 font-medium">Modular Diagnostics & Industrial Weighbridge Control Center</p>
@@ -203,7 +203,7 @@
             <span id="ov-sb-badge" class="badge-warning px-2 py-0.5 rounded-full text-[10px] font-bold">READY</span>
           </div>
           <div class="my-3">
-            <div class="text-lg font-bold text-white">Supabase REST</div>
+            <div class="text-lg font-bold text-white">Cloud REST API</div>
             <div id="ov-center-id" class="text-[11px] text-slate-400 mt-1">Center ID: 1</div>
           </div>
           <div class="text-[11px] text-slate-400 flex items-center justify-between border-t border-slate-800/80 pt-2.5">
@@ -296,7 +296,7 @@
               <div class="flex justify-between"><span>Baud Rate:</span><span class="text-emerald-400">1200 baud</span></div>
               <div class="flex justify-between"><span>Data / Stop:</span><span>8 / 1</span></div>
               <div class="flex justify-between"><span>Inter-char Timeout:</span><span>300 ms</span></div>
-              <div class="flex justify-between"><span>Hardware Pins:</span><span>GPIO 14 (TX), 15 (RX)</span></div>
+              <div class="flex justify-between"><span>Controller:</span><span class="text-emerald-400">Hermes Core</span></div>
             </div>
           </div>
         </div>
@@ -312,7 +312,7 @@
               </div>
               <p class="text-slate-400 text-xs"><strong>Cause:</strong> Failed to open serial port (/dev/ttyAMA0). Permissions or physical port busy.</p>
               <div class="p-2 rounded-xl bg-slate-950 text-[11px] text-emerald-400 font-medium">
-                <strong>Fix:</strong> Check user dialout group permissions and verify RS-232 converter connection to Raspberry Pi GPIO 14/15.
+                <strong>Fix:</strong> Check user dialout group permissions and verify RS-232 converter connection to Hermes controller.
               </div>
             </div>
             <div class="glass-panel-interactive p-4 rounded-2xl space-y-2">
@@ -371,7 +371,7 @@
         <div class="space-y-4 pt-4 border-t border-slate-800">
           <h3 class="text-sm font-bold text-white uppercase tracking-wider">ANPR & Safety Error Directory</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="anpr-error-cards">
-            <!-- Dynamically populated -->
+            <!-- Dynamically populated with live trigger badges -->
           </div>
         </div>
       </div>
@@ -387,7 +387,7 @@
             <div class="p-3 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-2xl">☁️</div>
             <div>
               <h2 class="text-xl font-bold text-white">Cloud Data Transfer Subsystem</h2>
-              <p class="text-xs text-slate-400">Supabase REST API, JWT authentication, multipart payloads & RAM memory purging</p>
+              <p class="text-xs text-slate-400">Cloud REST API, JWT authentication, multipart payloads & RAM memory purging</p>
             </div>
           </div>
           <span id="cloud-live-status-pill" class="badge-success px-3 py-1 rounded-full text-xs font-bold">HTTPS REST</span>
@@ -408,7 +408,7 @@
 
           <div class="p-5 rounded-3xl bg-slate-950 border border-slate-800 md:col-span-2 space-y-2">
             <div class="flex items-center justify-between text-xs text-slate-400">
-              <span class="font-bold text-white">Supabase JSON Payload Schema</span>
+              <span class="font-bold text-white">Cloud JSON Payload Schema</span>
               <span class="text-[10px] font-mono text-emerald-400">Auto-Generated</span>
             </div>
             <pre class="custom-scrollbar p-3 rounded-xl bg-slate-900/90 font-mono text-[11px] text-emerald-300 overflow-x-auto"><code>{
@@ -424,28 +424,9 @@
 
         <!-- Cloud Dedicated Error Codes -->
         <div class="space-y-4 pt-4 border-t border-slate-800">
-          <h3 class="text-sm font-bold text-white uppercase tracking-wider">Cloud Data Transfer Error Codes</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="glass-panel-interactive p-4 rounded-2xl space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="font-mono font-bold text-white text-xs">SUPABASE_AUTH_FAILED</span>
-                <span class="badge-danger px-2 py-0.5 rounded text-[10px] font-bold">Authentication</span>
-              </div>
-              <p class="text-slate-400 text-xs"><strong>Cause:</strong> Invalid operator login credentials (sb_email / sb_pass) in config.json.</p>
-              <div class="p-2 rounded-xl bg-slate-950 text-[11px] text-emerald-400 font-medium">
-                <strong>Fix:</strong> Re-enter operator email and password in config.json or verify Supabase project JWT keys.
-              </div>
-            </div>
-            <div class="glass-panel-interactive p-4 rounded-2xl space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="font-mono font-bold text-white text-xs">SUPABASE_UPLOAD_ERROR</span>
-                <span class="badge-danger px-2 py-0.5 rounded text-[10px] font-bold">Network Drop</span>
-              </div>
-              <p class="text-slate-400 text-xs"><strong>Cause:</strong> Network connection lost or Supabase REST API unreachable during weighment transmission.</p>
-              <div class="p-2 rounded-xl bg-slate-950 text-[11px] text-emerald-400 font-medium">
-                <strong>Fix:</strong> Check Wi-Fi router internet connection or mobile hotspot connectivity.
-              </div>
-            </div>
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider">Cloud Data Transfer Error Directory</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="cloud-error-cards">
+            <!-- Dynamically rendered with live counts -->
           </div>
         </div>
       </div>
@@ -501,7 +482,7 @@
           <!-- Hotspot Guide -->
           <div class="p-5 rounded-3xl bg-slate-900/60 border border-slate-800 space-y-3 text-xs leading-relaxed">
             <h4 class="font-bold text-white text-sm">Emergency Hotspot Details</h4>
-            <p class="text-slate-400">If the Raspberry Pi cannot connect to any Wi-Fi network, Hermes automatically spins up an Access Point on <code class="text-emerald-400 font-mono">wlan0</code>.</p>
+            <p class="text-slate-400">If Hermes cannot connect to any Wi-Fi network, Hermes automatically spins up an Access Point on <code class="text-emerald-400 font-mono">wlan0</code>.</p>
             <div class="p-3.5 rounded-2xl bg-slate-950 space-y-1.5 font-mono text-[11px]">
               <div><strong class="text-slate-400">Hotspot SSID:</strong> <span class="text-amber-300">Gluvok-Setup</span></div>
               <div><strong class="text-slate-400">Password:</strong> <span class="text-amber-300">gluvok1234</span></div>
@@ -539,8 +520,8 @@
 
     <!-- Footer -->
     <footer class="text-center text-xs text-slate-600 py-6 space-y-1">
-      <div>Gluvok Weighbridge Industrial Integration System &bull; Embedded Hermes Daemon &bull; Raspberry Pi</div>
-      <div class="text-[11px] text-slate-600">Pure In-RAM Image Lifecycle (Zero SD Card Wear) &bull; Automatic Fallback Hotspot Enabled</div>
+      <div>Gluvok Weighbridge Industrial Integration System &bull; Embedded Hermes Daemon</div>
+      <div class="text-[11px] text-slate-600">Pure In-RAM Image Lifecycle (Zero Disk Wear) &bull; Automatic Fallback Hotspot Enabled</div>
     </footer>
 
   </div>
@@ -552,64 +533,73 @@
         categoryName: "ANPR Engine",
         badgeClass: "badge-warning",
         cause: "Vehicle recognized on weighbridge, but license plate characters are obscured, dirty, or unreadable.",
-        action: "Inspect Camera 1 optical alignment, clean vehicle plate, or check lighting/glare.",
-        supabaseField: "vehicle_number = 'NO_PLATE_DETECTED'"
+        action: "Inspect Camera 1 optical alignment, clean vehicle plate, or check lighting/glare."
       },
       {
         code: "REJECTED_HUMAN_DETECTED",
         categoryName: "Safety Guard",
         badgeClass: "badge-danger",
         cause: "YOLO pre-screening detected human presence in the capture zone near the vehicle.",
-        action: "Ensure all weighbridge operators and pedestrians step clear of the platform during weighing.",
-        supabaseField: "vehicle_number = 'REJECTED_HUMAN_DETECTED'"
+        action: "Ensure all weighbridge operators and pedestrians step clear of the platform during weighing."
       },
       {
         code: "REJECTED_NO_FOUR_WHEELER",
         categoryName: "Pre-screening",
         badgeClass: "badge-warning",
         cause: "Scale weight active, but no 4-wheeler (truck/car/bus) was visually detected in Camera 1.",
-        action: "Verify vehicle is centered on the scale platform and within Camera 1 field of view.",
-        supabaseField: "vehicle_number = 'REJECTED_NO_FOUR_WHEELER'"
+        action: "Verify vehicle is centered on the scale platform and within Camera 1 field of view."
       },
       {
         code: "REJECTED_MULTIPLE_VEHICLES",
         categoryName: "Pre-screening",
         badgeClass: "badge-warning",
         cause: "Multiple vehicles detected simultaneously in the Camera 1 capture frame.",
-        action: "Ensure only one vehicle enters the weighbridge at a time.",
-        supabaseField: "vehicle_number = 'REJECTED_MULTIPLE_VEHICLES'"
+        action: "Ensure only one vehicle enters the weighbridge at a time."
       },
       {
         code: "ANPR_TIMEOUT",
         categoryName: "Inference Timeout",
         badgeClass: "badge-danger",
-        cause: "Argus microservice took longer than 15.0s to compute YOLO + Docling OCR inference on Raspberry Pi.",
-        action: "Check Raspberry Pi CPU utilization or restart the Argus microservice.",
-        supabaseField: "vehicle_number = 'ANPR_TIMEOUT'"
+        cause: "Argus microservice took longer than 15.0s to compute YOLO + Docling OCR inference on Hermes.",
+        action: "Check Hermes CPU utilization or restart the Argus microservice."
       },
       {
         code: "ANPR_CONNECTION_ERROR",
         categoryName: "Microservice",
         badgeClass: "badge-danger",
         cause: "Hermes cannot connect to Argus FastAPI server on port 8000.",
-        action: "Start Argus: `uv run uvicorn app.server:app --host 0.0.0.0 --port 8000`.",
-        supabaseField: "vehicle_number = 'ANPR_CONNECTION_ERROR'"
+        action: "Start Argus: `uv run uvicorn app.server:app --host 0.0.0.0 --port 8000`."
       },
       {
         code: "CAMERA_RTSP_FAILED",
         categoryName: "Camera Ingestion",
         badgeClass: "badge-danger",
         cause: "OpenCV unable to open RTSP stream from camera IP address.",
-        action: "Verify camera IP (192.168.10.251), RTSP port (554), and credentials in camera_config.py.",
-        supabaseField: "cam1_final_image = null"
+        action: "Verify camera IP (192.168.10.251), RTSP port (554), and credentials in camera_config.py."
       },
       {
         code: "EMPTY_IMAGE",
         categoryName: "Camera Frame",
         badgeClass: "badge-warning",
         cause: "Camera snapshot returned 0 bytes or corrupted payload.",
-        action: "Check camera network cable, switch power, and RTSP stream stability.",
-        supabaseField: "vehicle_number = 'EMPTY_IMAGE'"
+        action: "Check camera network cable, switch power, and RTSP stream stability."
+      }
+    ];
+
+    const CLOUD_ERROR_CODES_DB = [
+      {
+        code: "CLOUD_AUTH_FAILED",
+        categoryName: "Authentication",
+        badgeClass: "badge-danger",
+        cause: "Invalid operator login credentials (sb_email / sb_pass) in config.json.",
+        action: "Update operator credentials in config.json or verify Cloud JWT tokens."
+      },
+      {
+        code: "CLOUD_UPLOAD_ERROR",
+        categoryName: "Network / Sync",
+        badgeClass: "badge-danger",
+        cause: "Network connection dropped or Cloud REST API unreachable during weighment transmission.",
+        action: "Check Wi-Fi router internet connection or mobile hotspot connectivity."
       }
     ];
 
@@ -664,6 +654,35 @@
       }).join("");
     }
 
+    function renderCloudErrors() {
+      const container = document.getElementById("cloud-error-cards");
+      if (!container) return;
+      container.innerHTML = CLOUD_ERROR_CODES_DB.map(e => {
+        const count = liveErrorCounts[e.code] || 0;
+        const isLive = count > 0;
+        const borderClass = isLive ? "border-rose-500 shadow-glow-rose bg-rose-950/20" : "";
+        return `
+          <div class="glass-panel-interactive p-4 rounded-2xl flex flex-col justify-between space-y-3 ${borderClass}">
+            <div class="space-y-2">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5">
+                  <span class="font-mono font-bold text-white text-xs">${e.code}</span>
+                  ${isLive ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-500 text-white animate-pulse">LIVE (${count}x)</span>` : ''}
+                </div>
+                <span class="${e.badgeClass} px-2 py-0.5 rounded text-[10px] font-bold">${e.categoryName}</span>
+              </div>
+              <p class="text-slate-400 text-[11px] leading-relaxed"><strong class="text-slate-300">Cause:</strong> ${e.cause}</p>
+            </div>
+            <div class="space-y-2 pt-2 border-t border-slate-800">
+              <div class="p-2 rounded-xl bg-slate-950 text-[11px] text-emerald-400 font-medium">
+                <strong>Fix:</strong> ${e.action}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
     function togglePasswordVisibility() {
       const input = document.getElementById("wifi-password");
       input.type = input.type === "password" ? "text" : "password";
@@ -682,6 +701,7 @@
         if (data.error_counts) {
           liveErrorCounts = data.error_counts;
           renderAnprErrors();
+          renderCloudErrors();
         }
 
         // Scale data
@@ -721,7 +741,7 @@
           if (anprPill) anprPill.textContent = "ARGUS OFFLINE";
         }
 
-        // Supabase data
+        // Cloud status
         const sbBadge = document.getElementById("ov-sb-badge");
         const cloudPill = document.getElementById("cloud-live-status-pill");
         if (data.supabase && data.supabase.authenticated) {
@@ -730,8 +750,8 @@
           if (cloudPill) cloudPill.textContent = "AUTHENTICATED (OK)";
         } else {
           sbBadge.className = "badge-warning px-2 py-0.5 rounded-full text-[10px] font-bold";
-          sbBadge.textContent = "STANDBY";
-          if (cloudPill) cloudPill.textContent = "STANDBY";
+          sbBadge.textContent = "UNAUTHENTICATED";
+          if (cloudPill) cloudPill.textContent = "UNAUTHENTICATED";
         }
 
         // Wi-Fi / Hotspot data
@@ -804,7 +824,7 @@
 
         if (res.ok && resp.success) {
           alert.className = "p-3.5 rounded-xl bg-emerald-950/90 border border-emerald-700 text-emerald-200 block text-xs leading-relaxed";
-          alert.innerHTML = `<strong>✅ Success!</strong> ${resp.message}<br><span class="text-emerald-400">Pi is now connected to ${ssid}.</span>`;
+          alert.innerHTML = `<strong>✅ Success!</strong> ${resp.message}<br><span class="text-emerald-400">Hermes is now connected to ${ssid}.</span>`;
         } else {
           alert.className = "p-3.5 rounded-xl bg-rose-950/90 border border-rose-700 text-rose-200 block text-xs leading-relaxed";
           alert.innerHTML = `<strong>⚠️ Warning:</strong> ${resp.message || resp.error || 'Connection failed'}`;
@@ -845,6 +865,7 @@
     }
 
     renderAnprErrors();
+    renderCloudErrors();
     fetchStatus();
     setInterval(fetchStatus, 1000);
   </script>

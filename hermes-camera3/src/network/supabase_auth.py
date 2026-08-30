@@ -10,10 +10,16 @@ logger = logging.getLogger(__name__)
 def login_to_supabase() -> bool:
     if not config.supabase_email or not config.supabase_password:
         logger.warning("[Auth] Missing email or password in configuration.")
+        try:
+            from ..web.server import record_error_event, record_system_event
+            record_error_event("CLOUD_AUTH_FAILED", "Missing email or password in configuration.")
+            record_system_event("CLOUD", "Auth failed: Missing credentials in config.json")
+        except (ImportError, AttributeError):
+            pass
         return False
 
     login_url = f"{SUPABASE_BASE_URL}/auth/v1/token?grant_type=password"
-    logger.info("[Auth] Attempting login to Supabase...")
+    logger.info("[Auth] Attempting login to Cloud Backend...")
 
     headers = {
         "Content-Type": "application/json",
@@ -36,10 +42,23 @@ def login_to_supabase() -> bool:
                 fetch_profile_id()
                 return True
         logger.error(f"[Auth] Login failed with status code: {response.status_code}, response: {response.text}")
+        try:
+            from ..web.server import record_error_event, record_system_event
+            record_error_event("CLOUD_AUTH_FAILED", f"Status: {response.status_code}")
+            record_system_event("CLOUD", f"Cloud login failed: HTTP {response.status_code}")
+        except (ImportError, AttributeError):
+            pass
     except (requests.RequestException, ValueError, KeyError) as e:
         logger.error(f"[Auth] HTTP login exception: {e}")
+        try:
+            from ..web.server import record_error_event, record_system_event
+            record_error_event("CLOUD_AUTH_FAILED", str(e))
+            record_system_event("CLOUD", f"Cloud login network exception: {e}")
+        except (ImportError, AttributeError):
+            pass
 
     return False
+
 
 def _query_table_for_profile_id(table_name: str) -> bool:
     url = f"{SUPABASE_BASE_URL}/rest/v1/{table_name}?select=id"

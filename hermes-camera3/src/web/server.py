@@ -66,6 +66,12 @@ def record_weighment_result(session_id: str, plate: str, weight: float, is_error
             _error_counts[status_code] = _error_counts.get(status_code, 0) + 1
 
 
+def record_error_event(error_code: str, message: str = ""):
+    """Explicitly increments live occurrence count for a system error code."""
+    with _live_lock:
+        _error_counts[error_code] = _error_counts.get(error_code, 0) + 1
+
+
 def get_latest_weighment() -> dict[str, Any]:
     with _live_lock:
         return dict(_latest_weighment)
@@ -74,6 +80,7 @@ def get_latest_weighment() -> dict[str, Any]:
 def get_error_counts() -> dict[str, int]:
     with _live_lock:
         return dict(_error_counts)
+
 
 
 class FallbackHTTPRequestHandler(BaseHTTPRequestHandler):

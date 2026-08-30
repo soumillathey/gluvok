@@ -80,11 +80,31 @@ def post_to_supabase(session_payload: float | dict[str, Any], is_retry: bool = F
             auth_state.auth_token = ""
             if login_to_supabase():
                 post_to_supabase(session_payload, is_retry=True)
+            else:
+                try:
+                    from ..web.server import record_error_event, record_system_event
+                    record_error_event("CLOUD_AUTH_FAILED", "Token refresh failed")
+                    record_system_event("CLOUD", "Cloud token refresh failed.")
+                except (ImportError, AttributeError):
+                    pass
         else:
             logger.error(f"[Supabase] POST error {response.status_code}: {response.text}")
+            try:
+                from ..web.server import record_error_event, record_system_event
+                record_error_event("CLOUD_UPLOAD_ERROR", f"HTTP {response.status_code}")
+                record_system_event("CLOUD", f"Cloud POST failed: HTTP {response.status_code}")
+            except (ImportError, AttributeError):
+                pass
     except (requests.RequestException, ValueError, KeyError) as e:
         logger.error(f"[Supabase] HTTP POST exception: {e}")
+        try:
+            from ..web.server import record_error_event, record_system_event
+            record_error_event("CLOUD_UPLOAD_ERROR", str(e))
+            record_system_event("CLOUD", f"Cloud POST exception: {e}")
+        except (ImportError, AttributeError):
+            pass
     finally:
+
         # Explicitly release image byte buffers and base64 payloads from RAM
         if isinstance(session_payload, dict):
             session_payload.clear()
